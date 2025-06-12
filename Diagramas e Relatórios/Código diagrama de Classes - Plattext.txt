@@ -1,0 +1,196 @@
+@startuml
+
+entity endereco {
+  + id_endereco : INTEGER
+  + cidade : VARCHAR
+  + numero : INTEGER
+  + rua : VARCHAR
+  + cep : INTEGER
+  + complemento : VARCHAR
+  + bairro : VARCHAR
+}
+
+class instituicao {
+  + id_instituicao : INTEGER
+  + orgao_responsavel : VARCHAR
+}
+
+class usuario {
+  + id_usuario : INTEGER
+  + nome : VARCHAR
+  + cpf : VARCHAR
+  + login : VARCHAR
+  + senha : VARCHAR
+  + datanascimento : DATE
+  + genero : VARCHAR
+  --
+  + fazerLogin(): boolean 
+  + recuperarSenha(): void 
+  + editarPerfil(): void 
+  + habilitarAcessibilidade(): void 
+  + acessarCronogramaAtividades(): void 
+  + acessarMuralInformacoes(): void 
+  + acessarInformacoesInstituicao(): void 
+  + selecionarAtividade(): void 
+  + inscreverAtividade(): void 
+  + acessarAtividadesInscritas(): void 
+  + cancelarInscricao(): void 
+}
+
+class professor {
+}
+
+class idoso {
+  + obs : TEXT
+  + restricao_medica : TEXT
+}
+
+class funcionario {
+  + cadastrarAtividade(atividade: Atividade): void 
+  + editarAtividade(atividade: Atividade): void 
+  + removerAtividade(atividade: Atividade): void 
+  + cadastrarNoticia(noticia: Mural): void 
+  + editarNoticia(noticia: Mural): void 
+  + removerNoticia(noticia: Mural): void 
+  + inscreverUsuario(usuario: Usuario, atividade: Atividade): void 
+  + cadastrarNoticias(): void 
+  + editarNoticias(): void 
+  + removerNoticias(): void 
+  + realizarInscricaoManualIdosoAtividade(): void 
+  + acessarCronograma(): void 
+  + gerarRelatorioCronograma(): void 
+  + acessarTurmas(): void 
+  + imprimirListaTurmas(): void 
+}
+
+class contato {
+  + id_contato : INTEGER
+  + id_usuario : INTEGER
+  + id_instituicao : INTEGER
+  + tipo : VARCHAR
+  + descricao : VARCHAR
+
+}
+
+class atividade {
+  + id_atividade : INT
+  + id_usuario_professor : INT
+  + nome : VARCHAR
+  + descricao : VARCHAR 
+  + data_hora : DATETIME 
+  + vagas_totais : INT 
+  + vagas_disponiveis : INT 
+  + recorrente : BOOLEAN
+  + dia_semana : VARCHAR
+  --
+  + verificarDisponibilidade(): boolean 
+  + inscreverUsuario(usuario: Usuario): void 
+  + cancelarInscricao(usuario: Usuario): void 
+  + editarAtividade(): void 
+}
+
+class alimentos {
+  + id_alimentos : INT
+  + descricao : VARCHAR
+}
+
+class cardapio {
+  + id_cardapio : INT
+  + id_usuario_funcionario : INT
+  + cardapio : TEXT
+  + data_hora : TIMESTAMP
+  
+}
+
+class noticias {
+  + id_noticias : INT
+  + id_usuario_funcionario : INT
+  + titulo : VARCHAR
+  + fonte : VARCHAR
+  + descricao : VARCHAR
+  
+}
+
+class atividades_idoso {
+  + id_usuario_idoso : INT
+  + id_atividade : INT
+}
+
+class alimentos_cardapio {
+  + id_cardapio : INT
+  + id_alimentos : INT
+}
+
+class agenda_atividade {
+  + id_agenda_atividade : INT
+  + id_atividade : INT
+  + data : DATE
+  + hora : TIME
+
+}
+
+class mural {
+  + id_mural : INT
+  + titulo : VARCHAR
+  + conteudo : TEXT 
+  + data_publicacao : DATETIME 
+  --
+  + cadastrarNoticia(): void 
+  + editarNoticia(): void 
+  + removerNoticia(): void 
+}
+
+class notificacao {
+  + id_notificacao : INT
+  + usuario : Usuario 
+  + mensagem : TEXT 
+  + tipo : ENUM ('Lembrete', 'Alteracao') 
+  + data_envio : DATETIME 
+  --
+  + enviar(): void 
+}
+
+class inscricao {
+  + id_inscricao : INT
+  + usuario : Usuario 
+  + atividade : Atividade 
+  + data_inscricao : DATETIME 
+  --
+  + validarInscricao(): boolean 
+  + cancelar(): void 
+}
+
+' Relacionamentos
+endereco "1" -- "N" instituicao : possui >
+endereco "1" -- "N" usuario : reside_em >
+
+usuario <|-- professor : herda
+usuario <|-- idoso : herda
+usuario <|-- funcionario : herda
+
+usuario "1" -- "N" contato : tem >
+instituicao "1" -- "N" contato : tem >
+
+professor "1" -- "N" atividade : cria >
+
+idoso "N" -- "N" atividades_idoso : participa <
+atividade "N" -- "N" atividades_idoso : tem >
+
+funcionario "1" -- "N" cardapio : cria >
+funcionario "1" -- "N" noticias : publica >
+
+cardapio "N" -- "N" alimentos_cardapio : contem <
+alimentos "N" -- "N" alimentos_cardapio : faz_parte >
+
+atividade "1" -- "N" agenda_atividade : possui >
+
+usuario "1" -- "N" inscricao : faz >
+atividade "1" -- "N" inscricao : pertence >
+
+usuario "1" -- "N" notificacao : recebe >
+
+mural "1" -- "N" notificacao : refere_se_a >
+
+funcionario "1" -- "N" mural : gerencia >
+
+@enduml
