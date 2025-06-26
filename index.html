@@ -1,0 +1,2704 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal Cidade do Idoso - Chapecó</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #5D8BF4;
+            --secondary: #2D31FA;
+            --accent: #051367;
+            --light: #DFF6FF;
+            --dark: #1A1A2E;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+        }
+        
+        .text-xxl {
+            font-size: 2.5rem;
+        }
+        
+        .text-high-contrast {
+            color: #000;
+            background-color: #fff;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--secondary);
+        }
+        
+        /* Accessibility toggle styles */
+        #accessibilityPanel {
+            transition: all 0.3s ease;
+            right: -300px;
+        }
+        
+        #accessibilityPanel.open {
+            right: 0;
+        }
+        
+        /* Voice reader highlight */
+        .reading {
+            background-color: yellow;
+            color: black;
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 10px;
+        }
+        
+        /* Activity card */
+        .activity-card {
+            transition: transform 0.2s;
+        }
+        
+        .activity-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        /* Login card */
+        .login-card {
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* CAPTCHA */
+        .captcha-box {
+            letter-spacing: 5px;
+            user-select: none;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen flex flex-col">
+    <!-- Accessibility Panel (hidden by default) -->
+    <div id="accessibilityPanel" class="fixed top-0 z-50 w-72 h-full bg-white shadow-lg p-4">
+        <h3 class="text-xl font-bold mb-4">Configurações de Acessibilidade</h3>
+        <div class="space-y-4">
+            <div>
+                <label class="block font-medium mb-2">Tamanho da Fonte</label>
+                <div class="flex space-x-2">
+                    <button onclick="changeFontSize(-1)" class="px-3 py-1 bg-gray-200 rounded">A-</button>
+                    <button onclick="changeFontSize(0)" class="px-3 py-1 bg-gray-200 rounded">Padrão</button>
+                    <button onclick="changeFontSize(1)" class="px-3 py-1 bg-gray-200 rounded">A+</button>
+                </div>
+            </div>
+            <div>
+                <label class="block font-medium mb-2">Contraste</label>
+                <div class="flex space-x-2">
+                    <button onclick="toggleContrast()" class="px-3 py-1 bg-gray-800 text-white rounded">Alto Contraste</button>
+                </div>
+            </div>
+            <div>
+                <label class="block font-medium mb-2">Leitor de Tela</label>
+                <button id="readPageBtn" onclick="readPage()" class="px-3 py-1 bg-blue-600 text-white rounded">
+                    <i class="fas fa-volume-up mr-2"></i>Ler Página
+                </button>
+                <button id="stopReadingBtn" onclick="stopReading()" class="px-3 py-1 bg-red-600 text-white rounded hidden">
+                    <i class="fas fa-stop mr-2"></i>Parar
+                </button>
+            </div>
+            <div>
+                <label class="block font-medium mb-2">Modo de Exibição</label>
+                <div class="flex flex-wrap gap-2">
+                    <button onclick="setDarkMode(false)" class="px-3 py-1 bg-gray-200 rounded">Claro</button>
+                    <button onclick="setDarkMode(true)" class="px-3 py-1 bg-gray-800 text-white rounded">Escuro</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Header/Navigation -->
+    <header class="bg-blue-700 text-white shadow-md">
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center">
+                    <button onclick="toggleAccessibilityPanel()" class="mr-4 p-2 rounded-full bg-blue-800">
+                        <i class="fas fa-universal-access text-xl"></i>
+                    </button>
+                    <h1 class="text-2xl md:text-3xl font-bold">
+                        <a href="index.html" class="flex items-center">
+                            <img src="imagens/LogoPrefeitura.png" alt="Logo cidade do idoso" width="100" height="50">
+                            <span>Cidade do Idoso</span>
+                        </a>
+                    </h1>
+                </div>
+                
+                <nav class="hidden md:block">
+                    <ul class="flex space-x-6">
+                        <li><a href="#home" class="hover:text-blue-200 font-medium">Início</a></li>
+                        <li><a href="#activities" class="hover:text-blue-200 font-medium">Atividades</a></li>
+                        <li><a href="#news" class="hover:text-blue-200 font-medium">Mural</a></li>
+                        <li><a href="#about" class="hover:text-blue-200 font-medium">Sobre</a></li>
+                        <li id="loginNavItem"><a href="#login" class="hover:text-blue-200 font-medium">Login</a></li>
+                        <li id="logoutNavItem" class="hidden"><a href="#" onclick="logout()" class="hover:text-blue-200 font-medium">Sair</a></li>
+                        <li id="adminNavItem" class="hidden"><a href="#admin" class="hover:text-blue-200 font-medium bg-yellow-500 px-3 py-1 rounded">Admin</a></li>
+                    </ul>
+                </nav>
+                
+                <button id="mobileMenuBtn" class="md:hidden text-2xl">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Mobile menu -->
+        <div id="mobileMenu" class="hidden md:hidden bg-blue-800">
+            <div class="container mx-auto px-4 py-2">
+                <ul class="space-y-2">
+                    <li><a href="#home" class="block py-2 hover:bg-blue-700 px-2 rounded">Início</a></li>
+                    <li><a href="#activities" class="block py-2 hover:bg-blue-700 px-2 rounded">Atividades</a></li>
+                    <li><a href="#news" class="block py-2 hover:bg-blue-700 px-2 rounded">Mural</a></li>
+                    <li><a href="#about" class="block py-2 hover:bg-blue-700 px-2 rounded">Sobre</a></li>
+                    <li id="mobileLoginItem"><a href="#login" class="block py-2 hover:bg-blue-700 px-2 rounded">Login</a></li>
+                    <li id="mobileLogoutItem" class="hidden"><a href="#" onclick="logout()" class="block py-2 hover:bg-blue-700 px-2 rounded">Sair</a></li>
+                    <li id="mobileAdminItem" class="hidden"><a href="#admin" class="block py-2 bg-yellow-600 hover:bg-yellow-700 px-2 rounded">Admin</a></li>
+                </ul>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow container mx-auto px-4 py-8">
+        <!-- Dynamic content sections -->
+        <div id="content">
+            <!-- Home Section (default) -->
+            <section id="homeSection" class="mb-12">
+                <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+                    <h2 class="text-3xl font-bold mb-4 text-blue-800">Bem-vindo ao Portal da Cidade do Idoso</h2>
+                    <p class="mb-4 text-lg">Cidade do Idoso é uma iniciativa da Prefeitura de Chapecó para promover a qualidade de vida e integração social da população idosa da nossa cidade.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+                        <div class="bg-blue-100 p-6 rounded-lg flex flex-col items-center text-center">
+                            <i class="fas fa-calendar-alt text-4xl mb-4 text-blue-700"></i>
+                            <h3 class="text-xl font-bold mb-2">Atividades</h3>
+                            <p>Participe de diversas atividades culturais, esportivas e educacionais especialmente planejadas para você.</p>
+                        </div>
+                        <div class="bg-green-100 p-6 rounded-lg flex flex-col items-center text-center">
+                            <i class="fas fa-newspaper text-4xl mb-4 text-green-700"></i>
+                            <h3 class="text-xl font-bold mb-2">Mural de Notícias</h3>
+                            <p>Fique por dentro das últimas novidades e informações importantes da Cidade do Idoso.</p>
+                        </div>
+                        <div class="bg-yellow-100 p-6 rounded-lg flex flex-col items-center text-center">
+                            <i class="fas fa-user-friends text-4xl mb-4 text-yellow-700"></i>
+                            <h3 class="text-xl font-bold mb-2">Comunidade</h3>
+                            <p>Conecte-se com outros participantes, faça novos amigos e compartilhe experiências.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="bg-white rounded-lg shadow-md p-6">
+                        <h3 class="text-2xl font-bold mb-4 text-blue-800">Próximas Atividades</h3>
+                        <div id="upcomingActivities" class="space-y-4">
+                            <!-- Filled by JavaScript with upcoming activities -->
+                            <div class="text-center p-4 bg-gray-100 rounded">
+                                <p>Carregando atividades...</p>
+                            </div>
+                        </div>
+                        <a href="#activities" class="mt-4 inline-block btn-primary px-4 py-2 rounded-lg font-medium">Ver Todas Atividades</a>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg shadow-md p-6">
+                        <h3 class="text-2xl font-bold mb-4 text-blue-800">Últimas Notícias</h3>
+                        <div id="latestNews" class="space-y-4">
+                            <!-- Filled by JavaScript with latest news -->
+                            <div class="text-center p-4 bg-gray-100 rounded">
+                                <p>Carregando notícias...</p>
+                            </div>
+                        </div>
+                        <a href="#news" class="mt-4 inline-block btn-primary px-4 py-2 rounded-lg font-medium">Ver Todas Notícias</a>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Login Section -->
+            <section id="loginSection" class="hidden max-w-lg mx-auto bg-white rounded-xl shadow-md overflow-hidden p-8">
+                <div class="text-center mb-6">
+                    <h2 class="text-3xl font-bold text-blue-800">Acesso ao Portal</h2>
+                    <p class="text-gray-600">Digite seus dados para acessar o sistema</p>
+                </div>
+                
+                <form id="loginForm" class="space-y-6">
+                    <div>
+                        <label for="userType" class="block text-sm font-medium text-gray-700 mb-1">Tipo de Usuário</label>
+                        <select id="userType" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <option value="elderly">Idoso</option>
+                            <option value="staff">Funcionário</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label for="username" class="block text-sm font-medium text-gray-700 mb-1">Nome de Usuário ou CPF</label>
+                        <input type="text" id="username" placeholder="Digite seu usuário ou CPF" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    
+                    <div>
+                        <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Senha</label>
+                        <div class="relative">
+                            <input type="password" id="password" placeholder="Digite sua senha" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <button type="button" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500" onclick="togglePasswordVisibility('password')">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <input type="checkbox" id="rememberMe" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                            <label for="rememberMe" class="ml-2 block text-sm text-gray-700">Lembrar de mim</label>
+                        </div>
+                        <a href="#" onclick="showForgotPassword()" class="text-sm text-blue-600 hover:text-blue-800">Esqueceu a senha?</a>
+                    </div>
+                    
+                    <div>
+                        <button type="submit" class="w-full btn-primary py-2 px-4 rounded-lg font-medium text-lg">Entrar</button>
+                    </div>
+                    
+                    <div class="text-center text-sm">
+                        <p>Ainda não tem cadastro? <a href="#" onclick="showRegisterForm()" class="text-blue-600 hover:text-blue-800 font-medium">Crie uma conta</a></p>
+                    </div>
+                </form>
+                
+                <!-- Forgot Password Form -->
+                <form id="forgotPasswordForm" class="hidden space-y-6">
+                    <div class="text-center">
+                        <h3 class="text-xl font-bold text-blue-800 mb-2">Recuperar Senha</h3>
+                        <p class="text-gray-600 mb-4">Digite seu CPF para receber instruções de recuperação</p>
+                    </div>
+                    
+                    <div>
+                        <label for="recoveryCpf" class="block text-sm font-medium text-gray-700 mb-1">CPF</label>
+                        <input type="text" id="recoveryCpf" placeholder="Digite seu CPF (somente números)" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    
+                    <div>
+                        <button type="button" onclick="recoverPassword()" class="w-full btn-primary py-2 px-4 rounded-lg font-medium text-lg">Enviar</button>
+                    </div>
+                    
+                    <div class="text-center text-sm">
+                        <p>Lembrou da senha? <a href="#" onclick="showLoginForm()" class="text-blue-600 hover:text-blue-800 font-medium">Voltar ao login</a></p>
+                    </div>
+                </form>
+                
+                <!-- Registration Form -->
+                <form id="registerForm" class="hidden space-y-4">
+                    <div class="text-center">
+                        <h3 class="text-xl font-bold text-blue-800 mb-2">Cadastro de Idoso</h3>
+                        <p class="text-gray-600 mb-4">Preencha os dados para criar sua conta</p>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="regName" class="block text-sm font-medium text-gray-700 mb-1">Nome Completo*</label>
+                            <input type="text" id="regName" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+                        </div>
+                        <div>
+                            <label for="regCpf" class="block text-sm font-medium text-gray-700 mb-1">CPF*</label>
+                            <input type="text" id="regCpf" placeholder="Somente números" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label for="regEmail" class="block text-sm font-medium text-gray-700 mb-1">E-mail</label>
+                        <input type="email" id="regEmail" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="regPhone" class="block text-sm font-medium text-gray-700 mb-1">Telefone*</label>
+                            <input type="tel" id="regPhone" placeholder="(XX) XXXX-XXXX" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+                        </div>
+                        <div>
+                            <label for="regBirthDate" class="block text-sm font-medium text-gray-700 mb-1">Data de Nascimento*</label>
+                            <input type="date" id="regBirthDate" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="regZipCode" class="block text-sm font-medium text-gray-700 mb-1">CEP*</label>
+                            <input type="text" id="regZipCode" placeholder="Digite seu CEP" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+                        </div>
+                        <div>
+                            <label for="regAddressNumber" class="block text-sm font-medium text-gray-700 mb-1">Número*</label>
+                            <input type="text" id="regAddressNumber" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label for="regAddress" class="block text-sm font-medium text-gray-700 mb-1">Endereço*</label>
+                        <input type="text" id="regAddress" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="regPassword" class="block text-sm font-medium text-gray-700 mb-1">Senha*</label>
+                            <div class="relative">
+                                <input type="password" id="regPassword" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+                                <button type="button" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500" onclick="togglePasswordVisibility('regPassword')">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div>
+                            <label for="regConfirmPassword" class="block text-sm font-medium text-gray-700 mb-1">Confirmar Senha*</label>
+                            <div class="relative">
+                                <input type="password" id="regConfirmPassword" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+                                <button type="button" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500" onclick="togglePasswordVisibility('regConfirmPassword')">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="pt-2 space-y-4">
+                        <button type="button" onclick="registerUser()" class="w-full btn-primary py-2 px-4 rounded-lg font-medium text-lg">Cadastrar</button>
+                        <button type="button" onclick="showLoginForm()" class="w-full py-2 px-4 border border-gray-300 rounded-lg font-medium hover:bg-gray-100">Voltar</button>
+                    </div>
+                </form>
+            </section>
+
+            <!-- Activities Section -->
+            <section id="activitiesSection" class="hidden">
+                <h2 class="text-3xl font-bold mb-6 text-blue-800">Atividades Disponíveis</h2>
+                
+                <div id="elderlyActivities" class="mb-8">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-2xl font-semibold">Minhas Inscrições</h3>
+                        <div class="flex space-x-2">
+                            <button onclick="filterActivities('upcoming')" class="px-4 py-1 bg-blue-600 text-white rounded-lg">Próximas</button>
+                            <button onclick="filterActivities('past')" class="px-4 py-1 bg-gray-300 rounded-lg">Passadas</button>
+                            <button onclick="filterActivities('all')" class="px-4 py-1 bg-gray-300 rounded-lg">Todas</button>
+                        </div>
+                    </div>
+                    
+                    <div id="myActivitiesList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div class="text-center p-8 bg-gray-100 rounded-lg">
+                            <p>Você ainda não está inscrito em nenhuma atividade.</p>
+                            <p class="mt-2">Navegue pelas atividades disponíveis abaixo e faça sua inscrição!</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mb-8">
+                    <h3 class="text-2xl font-semibold mb-6">Todas as Atividades</h3>
+                    <div class="mb-4 flex flex-wrap gap-2">
+                        <button onclick="filterAllActivities('all')" class="px-4 py-1 bg-blue-600 text-white rounded-lg">Todas</button>
+                        <button onclick="filterAllActivities('arts')" class="px-4 py-1 bg-gray-300 rounded-lg">Artes</button>
+                        <button onclick="filterAllActivities('sports')" class="px-4 py-1 bg-gray-300 rounded-lg">Esportes</button>
+                        <button onclick="filterAllActivities('education')" class="px-4 py-1 bg-gray-300 rounded-lg">Educação</button>
+                        <button onclick="filterAllActivities('health')" class="px-4 py-1 bg-gray-300 rounded-lg">Saúde</button>
+                        <button onclick="filterAllActivities('other')" class="px-4 py-1 bg-gray-300 rounded-lg">Outras</button>
+                    </div>
+                    
+                    <div id="allActivitiesList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <!-- Filled by JavaScript -->
+                        <div class="activity-card bg-white rounded-lg shadow-md overflow-hidden">
+                            <div class="p-6">
+                                <div class="flex justify-between items-start mb-2">
+                                    <h4 class="text-xl font-bold">Dança</h4>
+                                    <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">Artes</span>
+                                </div>
+                                <p class="text-gray-600 mb-4">Aulas de dança especialmente adaptadas para a terceira idade, melhorando coordenação motora e socialização.</p>
+                                <div class="flex justify-between items-center">
+                                    <div>
+                                        <p class="text-sm text-gray-500"><i class="fas fa-calendar-alt mr-1"></i> Terca, 10:00 - 11:30</p>
+                                        <p class="text-sm text-gray-500"><i class="fas fa-users mr-1"></i> Vagas: 12/20</p>
+                                    </div>
+                                    <button class="btn-primary px-4 py-1 rounded-md text-sm">Inscrever-se</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- News Section -->
+            <section id="newsSection" class="hidden">
+                <h2 class="text-3xl font-bold mb-6 text-blue-800">Mural de Notícias</h2>
+                
+                <div id="newsList" class="space-y-6">
+                    <!-- Filled by JavaScript -->
+                    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                        <div class="p-6">
+                            <div class="flex justify-between items-start mb-2">
+                                <h3 class="text-2xl font-bold">Chapecó é ouro em Concurso Internacional de Matemática pelo terceiro ano consecutivo</h3>
+                                <span class="text-sm text-gray-500">05/06/2025</span>
+                            </div>
+                            <p class="text-gray-700 mb-4">Chapecó conquista ouro pela terceira vez no Concurso Internacional Canguru de Matemática. As provas foram aplicadas entre os dias 20 e 24 de março de 2025 e cerca de 4.800 estudantes do ensino fundamental participaram. Aproximadamente 1,5 milhão de estudantes se envolveram na edição deste ano em mais de 6 mil escolas, em todos os estados do Brasil. Atualmente, a Canguru Sem Fronteiras está presente em 95 países.</p>
+                            <div class="flex justify-end">
+                                <button class="text-blue-600 hover:text-blue-800 font-medium">Ler mais...</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Admin Section -->
+            <section id="adminSection" class="hidden">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-3xl font-bold text-blue-800">Área do Funcionário</h2>
+                    <div class="flex space-x-2">
+                        <button id="adminActivitiesTab" onclick="showAdminTab('activities')" class="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium">Atividades</button>
+                        <button id="adminEldersTab" onclick="showAdminTab('elders')" class="px-4 py-2 bg-gray-300 rounded-lg font-medium">Idosos</button>
+                        <button id="adminReportsTab" onclick="showAdminTab('reports')" class="px-4 py-2 bg-gray-300 rounded-lg font-medium">Relatórios</button>
+                        <button id="adminNewsTab" onclick="showAdminTab('news')" class="px-4 py-2 bg-gray-300 rounded-lg font-medium">Notícias</button>
+                    </div>
+                </div>
+                
+                <!-- Admin Activities -->
+                <div id="adminActivitiesContent">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-2xl font-semibold">Gerenciar Atividades</h3>
+                        <button onclick="showAddActivityModal()" class="btn-primary px-4 py-2 rounded-lg flex items-center">
+                            <i class="fas fa-plus mr-2"></i> Nova Atividade
+                        </button>
+                    </div>
+                    
+                    <div id="adminActivitiesList" class="space-y-4">
+                        <!-- Filled by JavaScript -->
+                        <div class="bg-white rounded-lg shadow-md p-4">
+                            <div class="flex justify-between items-start mb-2">
+                                <h4 class="text-xl font-bold">Dança</h4>
+                                <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-sm">Ativa</span>
+                            </div>
+                            <p class="text-gray-600 mb-2"><i class="fas fa-info-circle mr-1"></i> Aulas de dança especialmente adaptadas para a terceira idade.</p>
+                            <div class="flex flex-wrap justify-between items-center">
+                                <div class="space-y-1">
+                                    <p class="text-sm"><i class="fas fa-calendar-alt mr-1"></i> <span class="font-medium">Terca e Quinta</span>, 10:00 - 11:30</p>
+                                    <p class="text-sm"><i class="fas fa-users mr-1"></i> Vagas: 12/20</p>
+                                    <p class="text-sm"><i class="fas fa-map-marker-alt mr-1"></i> Sala 3 - Pavilhão B</p>
+                                </div>
+                                <div class="flex space-x-2 mt-2 md:mt-0">
+                                    <button onclick="editActivity(1)" class="px-3 py-1 bg-yellow-500 text-white rounded-md text-sm">
+                                        <i class="fas fa-edit"></i> Editar
+                                    </button>
+                                    <button onclick="deleteActivity(1)" class="px-3 py-1 bg-red-500 text-white rounded-md text-sm">
+                                        <i class="fas fa-trash"></i> Remover
+                                    </button>
+                                    <button onclick="viewParticipants(1)" class="px-3 py-1 bg-blue-500 text-white rounded-md text-sm">
+                                        <i class="fas fa-users"></i> Participantes
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Admin Elders -->
+                <div id="adminEldersContent" class="hidden">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-2xl font-semibold">Gerenciar Idosos</h3>
+                        <button onclick="showAddElderModal()" class="btn-primary px-4 py-2 rounded-lg flex items-center">
+                            <i class="fas fa-plus mr-2"></i> Cadastrar Idoso
+                        </button>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg shadow-md p-4 mb-6">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium mb-1">Buscar por:</label>
+                                <select class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                                    <option>Nome</option>
+                                    <option>CPF</option>
+                                    <option>Atividade</option>
+                                </select>
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-medium mb-1">Termo:</label>
+                                <div class="flex">
+                                    <input type="text" placeholder="Digite o termo de busca" class="flex-1 px-3 py-2 border border-gray-300 rounded-l-lg focus:ring-blue-500 focus:border-blue-500">
+                                    <button class="btn-primary px-4 py-2 rounded-r-lg">
+                                        <i class="fas fa-search"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="eldersList" class="space-y-4">
+                        <!-- Filled by JavaScript -->
+                        <div class="bg-white rounded-lg shadow-md p-4">
+                            <div class="flex justify-between items-start mb-2">
+                                <h4 class="text-xl font-bold">João da Silva</h4>
+                                <span class="text-sm bg-blue-100 text-blue-800 px-2 py-1 rounded-full">Ativo</span>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-2">
+                                <div>
+                                    <p class="text-sm"><span class="font-medium">CPF:</span> 123.456.789-00</p>
+                                    <p class="text-sm"><span class="font-medium">Idade:</span> 72 anos</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm"><span class="font-medium">Telefone:</span> (49) 99999-9999</p>
+                                    <p class="text-sm"><span class="font-medium">CEP:</span> 89801-000</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm"><span class="font-medium">Atividades:</span> 3</p>
+                                    <p class="text-sm"><span class="font-medium">Cadastrado em:</span> 15/03/2025</p>
+                                </div>
+                            </div>
+                            <div class="flex justify-end space-x-2">
+                                <button onclick="editElder(1)" class="px-3 py-1 bg-yellow-500 text-white rounded-md text-sm">
+                                    <i class="fas fa-edit"></i> Editar
+                                </button>
+                                <button onclick="viewElderActivities(1)" class="px-3 py-1 bg-blue-500 text-white rounded-md text-sm">
+                                    <i class="fas fa-list"></i> Atividades
+                                </button>
+                                <button onclick="deleteElder(1)" class="px-3 py-1 bg-red-500 text-white rounded-md text-sm">
+                                    <i class="fas fa-trash"></i> Remover
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Admin Reports -->
+                <div id="adminReportsContent" class="hidden">
+                    <h3 class="text-2xl font-semibold mb-6">Relatórios</h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                        <div class="bg-white rounded-lg shadow-md p-6 text-center">
+                            <h4 class="text-xl font-bold mb-2">Participação por Atividade</h4>
+                            <div class="h-40 flex items-center justify-center">
+                                <p>Gráfico de Pizza</p>
+                            </div>
+                            <button class="mt-4 btn-primary px-4 py-2 rounded-lg w-full">Gerar Relatório</button>
+                        </div>
+                        
+                        <div class="bg-white rounded-lg shadow-md p-6 text-center">
+                            <h4 class="text-xl font-bold mb-2">Frequência Mensal</h4>
+                            <div class="h-40 flex items-center justify-center">
+                                <p>Gráfico de Barras</p>
+                            </div>
+                            <button class="mt-4 btn-primary px-4 py-2 rounded-lg w-full">Gerar Relatório</button>
+                        </div>
+                        
+                        <div class="bg-white rounded-lg shadow-md p-6 text-center">
+                            <h4 class="text-xl font-bold mb-2">Cadastros por Mês</h4>
+                            <div class="h-40 flex items-center justify-center">
+                                <p>Gráfico de Linhas</p>
+                            </div>
+                            <button class="mt-4 btn-primary px-4 py-2 rounded-lg w-full">Gerar Relatório</button>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg shadow-md p-6">
+                        <h4 class="text-xl font-bold mb-4">Relatório Personalizado</h4>
+                        <form class="space-y-4">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium mb-1">Tipo de Relatório</label>
+                                    <select class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                                        <option>Participação em Atividades</option>
+                                        <option>Frequência</option>
+                                        <option>Cadastros</option>
+                                        <option>Atividades por Período</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-1">Período</label>
+                                    <select class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                                        <option>Últimos 7 dias</option>
+                                        <option>Últimos 30 dias</option>
+                                        <option>Este mês</option>
+                                        <option>Mês passado</option>
+                                        <option>Personalizado</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium mb-1">Data Inicial</label>
+                                    <input type="date" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-1">Data Final</label>
+                                    <input type="date" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1">Formato</label>
+                                <div class="flex space-x-4">
+                                    <label class="inline-flex items-center">
+                                        <input type="radio" name="format" class="form-radio" checked>
+                                        <span class="ml-2">PDF</span>
+                                    </label>
+                                    <label class="inline-flex items-center">
+                                        <input type="radio" name="format" class="form-radio">
+                                        <span class="ml-2">Excel</span>
+                                    </label>
+                                    <label class="inline-flex items-center">
+                                        <input type="radio" name="format" class="form-radio">
+                                        <span class="ml-2">Impressão</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="pt-2">
+                                <button type="button" class="btn-primary px-6 py-2.5 rounded-lg w-full font-medium">Gerar Relatório</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Admin News -->
+                <div id="adminNewsContent" class="hidden">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-2xl font-semibold">Gerenciar Notícias</h3>
+                        <button onclick="showAddNewsModal()" class="btn-primary px-4 py-2 rounded-lg flex items-center">
+                            <i class="fas fa-plus mr-2"></i> Nova Notícia
+                        </button>
+                    </div>
+                    
+                    <div id="newsAdminList" class="space-y-4">
+                        <!-- Filled by JavaScript -->
+                        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                            <div class="p-6">
+                                <div class="flex justify-between items-start mb-2">
+                                    <h4 class="text-xl font-bold">Chapecó é ouro em Concurso Internacional de Matemática pelo terceiro ano consecutivo</h4>
+                                    <span class="text-sm text-gray-500">05/06/2025</span>
+                                </div>
+                                <p class="text-gray-700 mb-4">Chapecó conquista ouro pela terceira vez no Concurso Internacional Canguru de Matemática. As provas foram aplicadas entre os dias 20 e 24 de março de 2025 e cerca de 4.800 estudantes do ensino fundamental participaram. Aproximadamente 1,5 milhão de estudantes se envolveram na edição deste ano em mais de 6 mil escolas, em todos os estados do Brasil. Atualmente, a Canguru Sem Fronteiras está presente em 95 países.</p>
+                                <div class="flex justify-end space-x-2">
+                                    <button class="px-3 py-1 bg-yellow-500 text-white rounded-md text-sm">
+                                        <i class="fas fa-edit"></i> Editar
+                                    </button>
+                                    <button class="px-3 py-1 bg-blue-500 text-white rounded-md text-sm">
+                                        <i class="fas fa-eye"></i> Visualizar
+                                    </button>
+                                    <button class="px-3 py-1 bg-red-500 text-white rounded-md text-sm">
+                                        <i class="fas fa-trash"></i> Remover
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-blue-800 text-white py-8">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <h4 class="font-bold mb-4">Contato</h4>
+                    <p><i class="fas fa-map-marker-alt mr-2"></i> R. Sen. Atilio Fontana - Efapi, Chapecó - SC</p>
+                    <p><i class="fas fa-phone-alt mr-2"></i> (49) 98422-2298</p>
+                    <p><i class="fas fa-envelope mr-2"></i> cidadedoidoso@chapeco.sc.gov.br</p>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-4">Horário de Funcionamento</h4>
+                    <p>Segunda a Sexta: 8h às 18h</p>
+                    <p>Domingo e Sabado: Fechado</p>
+                </div>
+            </div>
+            <div class="border-t border-blue-700 mt-8 pt-6 text-center">
+                <p>&copy; 2025 Portal Cidade do Idoso - Chapecó/SC. Todos os direitos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Add Activity Modal -->
+    <div id="addActivityModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-2xl font-bold">Nova Atividade</h3>
+                    <button onclick="hideModal('addActivityModal')" class="text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-times text-2xl"></i>
+                    </button>
+                </div>
+                
+                <form id="activityForm" class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Nome da Atividade*</label>
+                            <input type="text" id="activityName" class="w-full px-3 py-2 border border-gray-300 rounded-lg" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Categoria*</label>
+                            <select id="activityCategory" class="w-full px-3 py-2 border border-gray-300 rounded-lg" required>
+                                <option value="">Selecione</option>
+                                <option value="arts">Artes</option>
+                                <option value="sports">Esportes</option>
+                                <option value="education">Educação</option>
+                                <option value="health">Saúde</option>
+                                <option value="other">Outras</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Descrição*</label>
+                        <textarea id="activityDescription" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg" required></textarea>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Dias da Semana*</label>
+                            <div class="grid grid-cols-2 md:grid-cols-3 gap-2 mt-1">
+                                <label class="inline-flex items-center">
+                                    <input type="checkbox" value="seg" class="form-checkbox">
+                                    <span class="ml-2">Segunda</span>
+                                </label>
+                                <label class="inline-flex items-center">
+                                    <input type="checkbox" value="ter" class="form-checkbox">
+                                    <span class="ml-2">Terça</span>
+                                </label>
+                                <label class="inline-flex items-center">
+                                    <input type="checkbox" value="qua" class="form-checkbox">
+                                    <span class="ml-2">Quarta</span>
+                                </label>
+                                <label class="inline-flex items-center">
+                                    <input type="checkbox" value="qui" class="form-checkbox">
+                                    <span class="ml-2">Quinta</span>
+                                </label>
+                                <label class="inline-flex items-center">
+                                    <input type="checkbox" value="sex" class="form-checkbox">
+                                    <span class="ml-2">Sexta</span>
+                                </label>
+                                <label class="inline-flex items-center">
+                                    <input type="checkbox" value="sab" class="form-checkbox">
+                                    <span class="ml-2">Sábado</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Horário*</label>
+                            <div class="flex space-x-2">
+                                <input type="time" id="activityStartTime" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg" required>
+                                <span class="flex items-center">às</span>
+                                <input type="time" id="activityEndTime" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg" required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Vagas Disponíveis*</label>
+                            <input type="number" id="activitySlots" min="1" class="w-full px-3 py-2 border border-gray-300 rounded-lg" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Local*</label>
+                            <input type="text" id="activityLocation" class="w-full px-3 py-2 border border-gray-300 rounded-lg" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Instrutor</label>
+                            <input type="text" id="activityInstructor" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Período da Atividade</label>
+                        <div class="flex space-x-2">
+                            <input type="date" id="activityStartDate" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg">
+                            <span class="flex items-center">até</span>
+                            <input type="date" id="activityEndDate" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg">
+                        </div>
+                    </div>
+                    
+                    <div class="pt-4 flex justify-end space-x-3">
+                        <button type="button" onclick="hideModal('addActivityModal')" class="px-4 py-2 border border-gray-300 rounded-lg font-medium hover:bg-gray-100">Cancelar</button>
+                        <button type="button" onclick="saveActivity()" class="btn-primary px-6 py-2 rounded-lg font-medium">Salvar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Elder Modal -->
+    <div id="addElderModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-2xl font-bold">Cadastrar Idoso</h3>
+                    <button onclick="hideModal('addElderModal')" class="text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-times text-2xl"></i>
+                    </button>
+                </div>
+                
+                <form id="elderForm" class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Nome Completo*</label>
+                            <input type="text" id="elderName" class="w-full px-3 py-2 border border-gray-300 rounded-lg" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1">CPF*</label>
+                            <input type="text" id="elderCpf" placeholder="Somente números" class="w-full px-3 py-2 border border-gray-300 rounded-lg" required>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Data de Nascimento*</label>
+                            <input type="date" id="elderBirthDate" class="w-full px-3 py-2 border border-gray-300 rounded-lg" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Gênero</label>
+                            <select id="elderGender" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                                <option value="male">Masculino</option>
+                                <option value="female">Feminino</option>
+                                <option value="other">Outro</option>
+                                <option value="not_say">Prefiro não dizer</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Telefone*</label>
+                            <input type="tel" id="elderPhone" placeholder="(XX) XXXX-XXXX" class="w-full px-3 py-2 border border-gray-300 rounded-lg" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1">E-mail</label>
+                            <input type="email" id="elderEmail" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Endereço*</label>
+                        <input type="text" id="elderAddress" class="w-full px-3 py-2 border border-gray-300 rounded-lg mb-2" required>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-2">
+                            <div>
+                                <label class="block text-sm font-medium mb-1">CEP*</label>
+                                <div class="flex">
+                                    <input type="text" id="elderZipCode" placeholder="Digite seu CEP" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg" required>
+                                    <button type="button" onclick="searchZipCode()" class="bg-gray-200 px-3 rounded-r-lg">
+                                        <i class="fas fa-search"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1">Número*</label>
+                                <input type="text" id="elderAddressNumber" class="w-full px-3 py-2 border border-gray-300 rounded-lg" required>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1">Complemento</label>
+                                <input type="text" id="elderAddressComplement" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium mb-1">Bairro*</label>
+                                <input type="text" id="elderNeighborhood" class="w-full px-3 py-2 border border-gray-300 rounded-lg" required>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1">Cidade*</label>
+                                <input type="text" id="elderCity" class="w-full px-3 py-2 border border-gray-300 rounded-lg" required>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1">Estado*</label>
+                                <input type="text" id="elderState" class="w-full px-3 py-2 border border-gray-300 rounded-lg" required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Senha*</label>
+                            <div class="relative">
+                                <input type="password" id="elderPassword" class="w-full px-3 py-2 border border-gray-300 rounded-lg" required>
+                                <button type="button" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500" onclick="togglePasswordVisibility('elderPassword')">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Confirmar Senha*</label>
+                            <div class="relative">
+                                <input type="password" id="elderConfirmPassword" class="w-full px-3 py-2 border border-gray-300 rounded-lg" required>
+                                <button type="button" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500" onclick="togglePasswordVisibility('elderConfirmPassword')">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="pt-4 flex justify-end space-x-3">
+                        <button type="button" onclick="hideModal('addElderModal')" class="px-4 py-2 border border-gray-300 rounded-lg font-medium hover:bg-gray-100">Cancelar</button>
+                        <button type="button" onclick="saveElder()" class="btn-primary px-6 py-2 rounded-lg font-medium">Salvar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add News Modal -->
+    <div id="addNewsModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-2xl font-bold">Nova Notícia</h3>
+                    <button onclick="hideModal('addNewsModal')" class="text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-times text-2xl"></i>
+                    </button>
+                </div>
+                
+                <form id="newsForm" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Título*</label>
+                        <input type="text" id="newsTitle" class="w-full px-3 py-2 border border-gray-300 rounded-lg" required>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Data de Publicação*</label>
+                        <input type="date" id="newsDate" class="w-full px-3 py-2 border border-gray-300 rounded-lg" required>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Imagem de Capa (URL)</label>
+                        <input type="text" id="newsImage" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                        <p class="text-xs text-gray-500 mt-1">Opcional - Cole o link de uma imagem</p>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Conteúdo*</label>
+                        <textarea id="newsContent" rows="10" class="w-full px-3 py-2 border border-gray-300 rounded-lg" required></textarea>
+                    </div>
+                    
+                    <div class="pt-4 flex justify-end space-x-3">
+                        <button type="button" onclick="hideModal('addNewsModal')" class="px-4 py-2 border border-gray-300 rounded-lg font-medium hover:bg-gray-100">Cancelar</button>
+                        <button type="button" onclick="saveNews()" class="btn-primary px-6 py-2 rounded-lg font-medium">Publicar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="notificationToast" class="fixed bottom-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg hidden z-50">
+        <div class="flex items-center">
+            <i class="fas fa-check-circle mr-2"></i>
+            <span id="notificationMessage">Operação realizada com sucesso!</span>
+            <button onclick="hideNotification()" class="ml-4">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        function initializeStorage() {
+            if (!localStorage.getItem('activities')) {
+                const sampleActivities = [
+                    {
+                        id: 1,
+                        name: "Dança",
+                        category: "arts",
+                        description: "Aulas de dança especialmente adaptadas para a terceira idade, melhorando coordenação motora e socialização.",
+                        days: ["ter", "qui"],
+                        startTime: "10:00",
+                        endTime: "11:30",
+                        slots: 20,
+                        location: "Sala 3 - Pavilhão B",
+                        instructor: "Maria da Silva",
+                        startDate: "2025-06-01",
+                        endDate: "2025-12-15",
+                        participants: [1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23],
+                        status: "active"
+                    },
+                    {
+                        id: 2,
+                        name: "Alongamento e Relaxamento",
+                        category: "health",
+                        description: "Exercícios de alongamento e técnicas de relaxamento para melhorar a flexibilidade e reduzir estresse.",
+                        days: ["seg", "qua", "sex"],
+                        startTime: "08:30",
+                        endTime: "09:30",
+                        slots: 15,
+                        location: "Sala 1 - Pavilhão A",
+                        instructor: "João Oliveira",
+                        startDate: "2025-06-01",
+                        endDate: "2025-12-15",
+                        participants: [2, 4, 6, 8, 10, 12, 14],
+                        status: "active"
+                    },
+                    {
+                        id: 3,
+                        name: "Oficina de Artesanato",
+                        category: "arts",
+                        description: "Produção de peças artesanais com diversos materiais, estimulando a criatividade e habilidades manuais.",
+                        days: ["qui"],
+                        startTime: "14:00",
+                        endTime: "16:00",
+                        slots: 12,
+                        location: "Sala 2 - Pavilhão B",
+                        instructor: "Ana Pereira",
+                        startDate: "2025-06-01",
+                        endDate: "2025-12-15",
+                        participants: [5, 6, 7, 8, 9, 10],
+                        status: "active"
+                    },
+                    {
+                        id: 4,
+                        name: "Yoga",
+                        category: "health",
+                        description: "Prática de yoga adaptada para a terceira idade, promovendo equilíbrio, alongamento e paz interior.",
+                        days: ["ter", "sex"],
+                        startTime: "15:30",
+                        endTime: "16:30",
+                        slots: 10,
+                        location: "Sala 4 - Pavilhão C",
+                        instructor: "Carlos Mendes",
+                        startDate: "2025-06-01",
+                        endDate: "2025-12-15",
+                        participants: [1, 3, 5, 7, 9],
+                        status: "active"
+                    }
+                ];
+                localStorage.setItem('activities', JSON.stringify(sampleActivities));
+            }
+            
+            if (!localStorage.getItem('elders')) {
+                const sampleElders = [
+                    {
+                        id: 1,
+                        name: "João da Silva",
+                        cpf: "12345678900",
+                        birthDate: "1950-05-15",
+                        gender: "male",
+                        phone: "(49) 9999-9999",
+                        email: "joao.silva@email.com",
+                        zipCode: "89801-000",
+                        address: "Rua das Flores, 123",
+                        addressNumber: "123",
+                        complement: "Apto 101",
+                        neighborhood: "Centro",
+                        city: "Chapecó",
+                        state: "SC",
+                        password: "senha123",
+                        status: "active"
+                    },
+                    {
+                        id: 2,
+                        name: "Maria Oliveira",
+                        cpf: "98765432100",
+                        birthDate: "1948-08-20",
+                        gender: "female",
+                        phone: "(49) 8888-8888",
+                        email: "maria.oliveira@email.com",
+                        zipCode: "89801-001",
+                        address: "Avenida Getúlio Vargas, 456",
+                        addressNumber: "456",
+                        complement: "",
+                        neighborhood: "Jardim América",
+                        city: "Chapecó",
+                        state: "SC",
+                        password: "senha123",
+                        status: "active"
+                    }
+                ];
+                localStorage.setItem('elders', JSON.stringify(sampleElders));
+            }
+            
+            if (!localStorage.getItem('news')) {
+                const sampleNews = [
+                    {
+                        id: 1,
+                        title: "Chapecó é ouro em Concurso Internacional de Matemática pelo terceiro ano consecutivo",
+                        date: "2025-06-05",
+                        content: "Chapecó conquista ouro pela terceira vez no Concurso Internacional Canguru de Matemática. As provas foram aplicadas entre os dias 20 e 24 de março de 2025 e cerca de 4.800 estudantes do ensino fundamental participaram. Aproximadamente 1,5 milhão de estudantes se envolveram na edição deste ano em mais de 6 mil escolas, em todos os estados do Brasil. Atualmente, a Canguru Sem Fronteiras está presente em 95 países.",
+                        image: "https://www.chapeco.sc.gov.br/extranet/thumbnail/crop/850x400/Noticia/whatsapp_image_2025_06_06_at_09_1749229265911.40.29__1_.jpeg"
+                    },
+                    {
+                        id: 2,
+                        title: "Sábado inicia a pré-venda de ingressos da Efapi do Brasil",
+                        date: "2025-05-20",
+                        content: "A Efapi 2025, que acontece de 10 a 19 de outubro, abrirá por 48 horas a pré-venda de ingressos para os quatro dias de shows pagos. Os dias de comercialização serão 07, 08 e 09 de junho via site ou em um ponto de venda no Centro de Eventos de Chapecó. Os interessados devem ficar atentos aos dias e horários programados para a pré-venda. O período é de 07 de junho ao meio-dia até 09 de junho ao meio-dia, pelo site guicheweb.com.br. No Centro de Eventos, no dia 07, das 12 às 18h; dia 08 das 10h às 18h e dia 09 das 9h às 12h. O site para cadastro no clube é clubegdounifique.com.br e o site de compra de ingressos é guicheweb.com.br. Os quatro shows pagos da Efapi 2025 são os seguintes: 11 de outubro - Hugo e Guilherme + Os Caras do Arrocha e Grelo; 12 de outubro - Zé Neto & Cristiano + Corpo & Alma; 17 de outubro - Gusttavo Lima e 18 de outubro - Alok + Henrique & Juliano.",
+                        image: "https://chapeco.sc.gov.br/extranet/thumbnail/crop/850x400/Noticia/1___efapi_2025___01_06___mapa___com_tag_de_pre_venda_01_1749157862482.png"
+                    }
+                ];
+                localStorage.setItem('news', JSON.stringify(sampleNews));
+            }
+            
+            if (!localStorage.getItem('staff')) {
+                const sampleStaff = [
+                    {
+                        id: 1,
+                        username: "admin",
+                        password: "admin123",
+                        name: "Administrador",
+                        role: "admin"
+                    },
+                    {
+                        id: 2,
+                        username: "funcionario1",
+                        password: "func123",
+                        name: "Funcionário 1",
+                        role: "staff"
+                    }
+                ];
+                localStorage.setItem('staff', JSON.stringify(sampleStaff));
+            }
+        }
+        
+        function checkSession() {
+            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            if (currentUser) {
+                document.getElementById('loginNavItem').classList.add('hidden');
+                document.getElementById('logoutNavItem').classList.remove('hidden');
+                document.getElementById('mobileLoginItem').classList.add('hidden');
+                document.getElementById('mobileLogoutItem').classList.remove('hidden');
+                
+                if (currentUser.role === 'staff' || currentUser.role === 'admin') {
+                    document.getElementById('adminNavItem').classList.remove('hidden');
+                    document.getElementById('mobileAdminItem').classList.remove('hidden');
+                }
+                
+                const welcomeElements = document.querySelectorAll('.user-welcome');
+                welcomeElements.forEach(el => {
+                    if (currentUser.role === 'elderly') {
+                        const elder = getElderById(currentUser.id);
+                        el.textContent = `Olá, ${elder.name}`;
+                    } else {
+                        el.textContent = `Olá, ${currentUser.name}`;
+                    }
+                });
+                
+                if (currentUser.role === 'elderly') {
+                    showSection('activitiesSection');
+                    loadElderActivities(currentUser.id);
+                } else {
+                    showSection('adminSection');
+                    showAdminTab('activities');
+                }
+            } else {
+                showSection('homeSection');
+            }
+        }
+        
+        function login(username, password, userType) {
+            let users = [];
+            if (userType === 'elderly') {
+                users = JSON.parse(localStorage.getItem('elders')) || [];
+                users = users.map(elder => ({
+                    id: elder.id,
+                    username: elder.cpf,
+                    password: elder.password,
+                    name: elder.name,
+                    role: 'elderly'
+                }));
+            } else {
+                users = JSON.parse(localStorage.getItem('staff')) || [];
+            }
+            
+            const user = users.find(u => u.username === username && u.password === password);
+            
+            if (user) {
+                localStorage.setItem('currentUser', JSON.stringify(user));
+                showNotification('Login realizado com sucesso!');
+                setTimeout(() => {
+                    checkSession();
+                    window.location.hash = '';
+                }, 1500);
+                return true;
+            }
+            
+            showNotification('Usuário ou senha incorretos', 'error');
+            return false;
+        }
+        
+        function logout() {
+            localStorage.removeItem('currentUser');
+            showNotification('Logout realizado com sucesso!');
+            setTimeout(() => {
+                checkSession();
+                showSection('homeSection');
+                window.location.hash = '';
+            }, 1500);
+        }
+        
+        function getActivities() {
+            return JSON.parse(localStorage.getItem('activities')) || [];
+        }
+        
+        function saveActivities(activities) {
+            localStorage.setItem('activities', JSON.stringify(activities));
+        }
+        
+        function getActivityById(id) {
+            const activities = getActivities();
+            return activities.find(a => a.id === parseInt(id));
+        }
+        
+        function saveActivity() {
+            const form = document.getElementById('activityForm');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+            
+            const activities = getActivities();
+            const newId = activities.length > 0 ? Math.max(...activities.map(a => a.id)) + 1 : 1;
+            
+            const selectedDays = [];
+            const dayCheckboxes = form.querySelectorAll('input[type="checkbox"]:checked');
+            dayCheckboxes.forEach(checkbox => {
+                selectedDays.push(checkbox.value);
+            });
+            
+            const newActivity = {
+                id: newId,
+                name: document.getElementById('activityName').value,
+                category: document.getElementById('activityCategory').value,
+                description: document.getElementById('activityDescription').value,
+                days: selectedDays,
+                startTime: document.getElementById('activityStartTime').value,
+                endTime: document.getElementById('activityEndTime').value,
+                slots: parseInt(document.getElementById('activitySlots').value),
+                location: document.getElementById('activityLocation').value,
+                instructor: document.getElementById('activityInstructor').value,
+                startDate: document.getElementById('activityStartDate').value,
+                endDate: document.getElementById('activityEndDate').value,
+                participants: [],
+                status: "active"
+            };
+            
+            activities.push(newActivity);
+            saveActivities(activities);
+            hideModal('addActivityModal');
+            showNotification('Atividade cadastrada com sucesso!');
+            
+            if (document.getElementById('adminSection').classList.contains('hidden')) {
+                showAdminTab('activities');
+            } else {
+                loadAllActivities();
+            }
+        }
+        
+        function editActivity(id) {
+            showAddActivityModal();
+            const activity = getActivityById(id);
+            
+            document.getElementById('activityName').value = activity.name;
+            document.getElementById('activityCategory').value = activity.category;
+            document.getElementById('activityDescription').value = activity.description;
+            
+            const dayCheckboxes = document.querySelectorAll('input[type="checkbox"]');
+            dayCheckboxes.forEach(checkbox => {
+                checkbox.checked = activity.days.includes(checkbox.value);
+            });
+            
+            document.getElementById('activityStartTime').value = activity.startTime;
+            document.getElementById('activityEndTime').value = activity.endTime;
+            document.getElementById('activitySlots').value = activity.slots;
+            document.getElementById('activityLocation').value = activity.location;
+            document.getElementById('activityInstructor').value = activity.instructor;
+            document.getElementById('activityStartDate').value = activity.startDate;
+            document.getElementById('activityEndDate').value = activity.endDate;
+            
+            const saveButton = document.querySelector('#activityForm button[type="button"]:last-child');
+            saveButton.textContent = 'Atualizar';
+            saveButton.onclick = function() {
+                updateActivity(id);
+            };
+        }
+        
+        function updateActivity(id) {
+            const form = document.getElementById('activityForm');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+            
+            const activities = getActivities();
+            const activityIndex = activities.findIndex(a => a.id === parseInt(id));
+            
+            if (activityIndex === -1) {
+                showNotification('Atividade não encontrada', 'error');
+                return;
+            }
+            
+            const selectedDays = [];
+            const dayCheckboxes = form.querySelectorAll('input[type="checkbox"]:checked');
+            dayCheckboxes.forEach(checkbox => {
+                selectedDays.push(checkbox.value);
+            });
+            
+            const updatedActivity = {
+                ...activities[activityIndex],
+                name: document.getElementById('activityName').value,
+                category: document.getElementById('activityCategory').value,
+                description: document.getElementById('activityDescription').value,
+                days: selectedDays,
+                startTime: document.getElementById('activityStartTime').value,
+                endTime: document.getElementById('activityEndTime').value,
+                slots: parseInt(document.getElementById('activitySlots').value),
+                location: document.getElementById('activityLocation').value,
+                instructor: document.getElementById('activityInstructor').value,
+                startDate: document.getElementById('activityStartDate').value,
+                endDate: document.getElementById('activityEndDate').value
+            };
+            
+            activities[activityIndex] = updatedActivity;
+            saveActivities(activities);
+            hideModal('addActivityModal');
+            showNotification('Atividade atualizada com sucesso!');
+            loadAllActivities();
+        }
+        
+        function deleteActivity(id) {
+            if (!confirm('Tem certeza que deseja remover esta atividade?')) {
+                return;
+            }
+            
+            const activities = getActivities();
+            const updatedActivities = activities.filter(a => a.id !== parseInt(id));
+            saveActivities(updatedActivities);
+            showNotification('Atividade removida com sucesso!');
+            loadAllActivities();
+        }
+        
+        function viewParticipants(id) {
+            alert('Funcionalidade de visualização de participantes será implementada aqui.');
+        }
+        
+        function subscribeToActivity(activityId, elderId) {
+            const activities = getActivities();
+            const activity = activities.find(a => a.id === activityId);
+            
+            if (!activity) {
+                showNotification('Atividade não encontrada', 'error');
+                return;
+            }
+            
+            if (activity.participants.includes(elderId)) {
+                showNotification('Você já está inscrito nesta atividade', 'info');
+                return;
+            }
+            
+            if (activity.participants.length >= activity.slots) {
+                showNotification('Não há vagas disponíveis nesta atividade', 'error');
+                return;
+            }
+            
+            const hasConflict = checkActivityConflict(elderId, activity);
+            if (hasConflict) {
+                showNotification('Você já está inscrito em outra atividade neste horário', 'error');
+                return;
+            }
+            
+            activity.participants.push(elderId);
+            saveActivities(activities);
+            
+            const elders = JSON.parse(localStorage.getItem('elders')) || [];
+            const elderIndex = elders.findIndex(e => e.id === elderId);
+            
+            if (elderIndex !== -1) {
+                const elder = elders[elderIndex];
+                if (!elder.activities) elder.activities = [];
+                elder.activities.push({
+                    activityId: activityId,
+                    signupDate: new Date().toISOString().split('T')[0],
+                    attendance: []
+                });
+                
+                elders[elderIndex] = elder;
+                localStorage.setItem('elders', JSON.stringify(elders));
+            }
+            
+            showNotification('Inscrição realizada com sucesso!');
+            loadElderActivities(elderId);
+        }
+        
+        function unsubscribeFromActivity(activityId, elderId) {
+            const activities = getActivities();
+            const activity = activities.find(a => a.id === activityId);
+            
+            if (!activity) {
+                showNotification('Atividade não encontrada', 'error');
+                return;
+            }
+            
+            if (!activity.participants.includes(elderId)) {
+                showNotification('Você não está inscrito nesta atividade', 'info');
+                return;
+            }
+            
+            const today = new Date();
+            const activityTime = new Date(`${today.toISOString().split('T')[0]} ${activity.startTime}`);
+            const oneHourBefore = new Date(activityTime.getTime() - 60 * 60 * 1000);
+            
+            if (today > oneHourBefore) {
+                showNotification('Não é possível cancelar a inscrição com menos de 1 hora de antecedência', 'error');
+                return;
+            }
+            
+            activity.participants = activity.participants.filter(id => id !== elderId);
+            saveActivities(activities);
+            
+            const elders = JSON.parse(localStorage.getItem('elders')) || [];
+            const elderIndex = elders.findIndex(e => e.id === elderId);
+            
+            if (elderIndex !== -1) {
+                const elder = elders[elderIndex];
+                if (elder.activities) {
+                    elder.activities = elder.activities.filter(a => a.activityId !== activityId);
+                }
+                
+                elders[elderIndex] = elder;
+                localStorage.setItem('elders', JSON.stringify(elders));
+            }
+            
+            showNotification('Inscrição cancelada com sucesso!');
+            loadElderActivities(elderId);
+        }
+        
+        function checkActivityConflict(elderId, newActivity) {
+            const activities = getActivities();
+            const elderActivities = activities.filter(a => a.participants.includes(elderId));
+            
+            for (const activity of elderActivities) {
+                const sharedDays = activity.days.filter(day => newActivity.days.includes(day));
+                if (sharedDays.length === 0) continue;
+                
+                const activityStart = new Date(`1970-01-01T${activity.startTime}`);
+                const activityEnd = new Date(`1970-01-01T${activity.endTime}`);
+                const newActivityStart = new Date(`1970-01-01T${newActivity.startTime}`);
+                const newActivityEnd = new Date(`1970-01-01T${newActivity.endTime}`);
+                
+                if (
+                    (newActivityStart >= activityStart && newActivityStart < activityEnd) ||
+                    (newActivityEnd > activityStart && newActivityEnd <= activityEnd) ||
+                    (newActivityStart <= activityStart && newActivityEnd >= activityEnd)
+                ) {
+                    return true;
+                }
+            }
+            
+            return false;
+        }
+        
+        function getElders() {
+            return JSON.parse(localStorage.getItem('elders')) || [];
+        }
+        
+        function saveElders(elders) {
+            localStorage.setItem('elders', JSON.stringify(elders));
+        }
+        
+        function getElderById(id) {
+            const elders = getElders();
+            return elders.find(e => e.id === parseInt(id));
+        }
+        
+        function registerElder() {
+            const form = document.getElementById('registerForm');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+            
+            const password = document.getElementById('regPassword').value;
+            const confirmPassword = document.getElementById('regConfirmPassword').value;
+            
+            if (password !== confirmPassword) {
+                showNotification('As senhas não coincidem', 'error');
+                return;
+            }
+            
+            const cpf = document.getElementById('regCpf').value;
+            if (!validateCPF(cpf)) {
+                showNotification('CPF inválido', 'error');
+                return;
+            }
+            
+            const zipCode = document.getElementById('regZipCode').value;
+            if (!validateZipCode(zipCode)) {
+                showNotification('CEP inválido', 'error');
+                return;
+            }
+            
+            const elders = getElders();
+            const newId = elders.length > 0 ? Math.max(...elders.map(e => e.id)) + 1 : 1;
+            
+            const newElder = {
+                id: newId,
+                name: document.getElementById('regName').value,
+                cpf: cpf,
+                birthDate: document.getElementById('regBirthDate').value,
+                gender: "not_say",
+                phone: document.getElementById('regPhone').value,
+                email: document.getElementById('regEmail').value,
+                zipCode: zipCode,
+                address: document.getElementById('regAddress').value,
+                addressNumber: document.getElementById('regAddressNumber').value,
+                complement: "",
+                neighborhood: "",
+                city: "",
+                state: "",
+                password: password,
+                status: "active",
+                activities: []
+            };
+            
+            elders.push(newElder);
+            saveElders(elders);
+            hideModal('addElderModal');
+            showNotification('Idoso cadastrado com sucesso!');
+            loadEldersList();
+        }
+        
+        function saveElder() {
+            const form = document.getElementById('elderForm');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+            
+            const password = document.getElementById('elderPassword').value;
+            const confirmPassword = document.getElementById('elderConfirmPassword').value;
+            
+            if (password !== confirmPassword) {
+                showNotification('As senhas não coincidem', 'error');
+                return;
+            }
+            
+            const cpf = document.getElementById('elderCpf').value;
+            if (!validateCPF(cpf)) {
+                showNotification('CPF inválido', 'error');
+                return;
+            }
+            
+            const elders = getElders();
+            const newId = elders.length > 0 ? Math.max(...elders.map(e => e.id)) + 1 : 1;
+            
+            const newElder = {
+                id: newId,
+                name: document.getElementById('elderName').value,
+                cpf: cpf,
+                birthDate: document.getElementById('elderBirthDate').value,
+                gender: document.getElementById('elderGender').value,
+                phone: document.getElementById('elderPhone').value,
+                email: document.getElementById('elderEmail').value,
+                zipCode: document.getElementById('elderZipCode').value,
+                address: document.getElementById('elderAddress').value,
+                addressNumber: document.getElementById('elderAddressNumber').value,
+                complement: document.getElementById('elderAddressComplement').value,
+                neighborhood: document.getElementById('elderNeighborhood').value,
+                city: document.getElementById('elderCity').value,
+                state: document.getElementById('elderState').value,
+                password: password,
+                status: "active"
+            };
+            
+            elders.push(newElder);
+            saveElders(elders);
+            hideModal('addElderModal');
+            showNotification('Idoso cadastrado com sucesso!');
+            loadEldersList();
+        }
+        
+        function editElder(id) {
+            showAddElderModal();
+            const elder = getElderById(id);
+            
+            document.getElementById('elderName').value = elder.name;
+            document.getElementById('elderCpf').value = elder.cpf;
+            document.getElementById('elderBirthDate').value = elder.birthDate;
+            document.getElementById('elderGender').value = elder.gender;
+            document.getElementById('elderPhone').value = elder.phone;
+            document.getElementById('elderEmail').value = elder.email;
+            document.getElementById('elderZipCode').value = elder.zipCode;
+            document.getElementById('elderAddress').value = elder.address;
+            document.getElementById('elderAddressNumber').value = elder.addressNumber;
+            document.getElementById('elderAddressComplement').value = elder.complement;
+            document.getElementById('elderNeighborhood').value = elder.neighborhood;
+            document.getElementById('elderCity').value = elder.city;
+            document.getElementById('elderState').value = elder.state;
+            document.getElementById('elderPassword').value = elder.password;
+            document.getElementById('elderConfirmPassword').value = elder.password;
+            
+            const saveButton = document.querySelector('#elderForm button[type="button"]:last-child');
+            saveButton.textContent = 'Atualizar';
+            saveButton.onclick = function() {
+                updateElder(id);
+            };
+        }
+        
+        function updateElder(id) {
+            const form = document.getElementById('elderForm');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+            
+            const elders = getElders();
+            const elderIndex = elders.findIndex(e => e.id === parseInt(id));
+            
+            if (elderIndex === -1) {
+                showNotification('Idoso não encontrado', 'error');
+                return;
+            }
+            
+            const password = document.getElementById('elderPassword').value;
+            const confirmPassword = document.getElementById('elderConfirmPassword').value;
+            
+            if (password !== confirmPassword) {
+                showNotification('As senhas não coincidem', 'error');
+                return;
+            }
+            
+            const updatedElder = {
+                ...elders[elderIndex],
+                name: document.getElementById('elderName').value,
+                cpf: document.getElementById('elderCpf').value,
+                birthDate: document.getElementById('elderBirthDate').value,
+                gender: document.getElementById('elderGender').value,
+                phone: document.getElementById('elderPhone').value,
+                email: document.getElementById('elderEmail').value,
+                zipCode: document.getElementById('elderZipCode').value,
+                address: document.getElementById('elderAddress').value,
+                addressNumber: document.getElementById('elderAddressNumber').value,
+                complement: document.getElementById('elderAddressComplement').value,
+                neighborhood: document.getElementById('elderNeighborhood').value,
+                city: document.getElementById('elderCity').value,
+                state: document.getElementById('elderState').value,
+                password: password
+            };
+            
+            elders[elderIndex] = updatedElder;
+            saveElders(elders);
+            hideModal('addElderModal');
+            showNotification('Dados do idoso atualizados com sucesso!');
+            loadEldersList();
+        }
+        
+        function deleteElder(id) {
+            if (!confirm('Tem certeza que deseja remover este idoso?')) {
+                return;
+            }
+            
+            const elders = getElders();
+            const updatedElders = elders.filter(e => e.id !== parseInt(id));
+            saveElders(updatedElders);
+            showNotification('Idoso removido com sucesso!');
+            loadEldersList();
+        }
+        
+        function viewElderActivities(id) {
+            alert('Funcionalidade de visualização de atividades do idoso será implementada aqui.');
+        }
+        
+        function validateCPF(cpf) {
+            cpf = cpf.replace(/[^\d]+/g, '');
+            
+            if (cpf.length !== 11 || 
+                /^(\d)\1{10}$/.test(cpf)) {
+                return false;
+            }
+            
+            let sum = 0;
+            for (let i = 0; i < 9; i++) {
+                sum += parseInt(cpf.charAt(i)) * (10 - i);
+            }
+            let remainder = (sum * 10) % 11;
+            if (remainder === 10 || remainder === 11) remainder = 0;
+            if (remainder !== parseInt(cpf.charAt(9))) return false;
+            
+            sum = 0;
+            for (let i = 0; i < 10; i++) {
+                sum += parseInt(cpf.charAt(i)) * (11 - i);
+            }
+            remainder = (sum * 10) % 11;
+            if (remainder === 10 || remainder === 11) remainder = 0;
+            if (remainder !== parseInt(cpf.charAt(10))) return false;
+            
+            return true;
+        }
+        
+        function validateZipCode(zipCode) {
+            return /^\d{8}$/.test(zipCode);
+        }
+        
+        function searchZipCode() {
+            const zipCodeInput = document.getElementById('regZipCode');
+            const zipCode = zipCodeInput.value.replace(/\D/g, '');
+            
+            if (zipCode.length !== 8) {
+                showNotification('CEP inválido', 'error');
+                return;
+            }
+            
+            zipCodeInput.disabled = true;
+            
+            setTimeout(() => {
+                const mockData = {
+                    zipCode: "89801000",
+                    address: "Rua Serafim Vaz da Cunha",
+                    neighborhood: "Centro",
+                    city: "Chapecó",
+                    state: "SC"
+                };
+                
+                document.getElementById('regAddress').value = mockData.address;
+                document.getElementById('regNeighborhood').value = mockData.neighborhood;
+                document.getElementById('regCity').value = mockData.city;
+                document.getElementById('regState').value = mockData.state;
+                
+                zipCodeInput.disabled = false;
+                showNotification('CEP encontrado!');
+            }, 800);
+        }
+        
+        function getNews() {
+            return JSON.parse(localStorage.getItem('news')) || [];
+        }
+        
+        function saveNewsList(news) {
+            localStorage.setItem('news', JSON.stringify(news));
+        }
+        
+        function saveNews() {
+            const form = document.getElementById('newsForm');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+            
+            const news = getNews();
+            const newId = news.length > 0 ? Math.max(...news.map(n => n.id)) + 1 : 1;
+            
+            const newNews = {
+                id: newId,
+                title: document.getElementById('newsTitle').value,
+                date: document.getElementById('newsDate').value,
+                content: document.getElementById('newsContent').value,
+                image: document.getElementById('newsImage').value
+            };
+            
+            news.push(newNews);
+            saveNewsList(news);
+            hideModal('addNewsModal');
+            showNotification('Notícia publicada com sucesso!');
+            
+            if (document.getElementById('adminSection').classList.contains('hidden')) {
+                loadNews();
+            } else {
+                showAdminTab('news');
+            }
+        }
+        
+        function showNotification(message, type = 'success') {
+            const toast = document.getElementById('notificationToast');
+            const messageElement = document.getElementById('notificationMessage');
+            
+            messageElement.textContent = message;
+            
+            switch (type) {
+                case 'error':
+                    toast.classList.remove('bg-green-500');
+                    toast.classList.add('bg-red-500');
+                    break;
+                case 'info':
+                    toast.classList.remove('bg-green-500');
+                    toast.classList.add('bg-blue-500');
+                    break;
+                case 'warning':
+                    toast.classList.remove('bg-green-500');
+                    toast.classList.add('bg-yellow-500');
+                    break;
+                default:
+                    toast.classList.remove('bg-red-500', 'bg-blue-500', 'bg-yellow-500');
+                    toast.classList.add('bg-green-500');
+            }
+            
+            toast.classList.remove('hidden');
+            setTimeout(hideNotification, 5000);
+        }
+        
+        function hideNotification() {
+            document.getElementById('notificationToast').classList.add('hidden');
+        }
+        
+        function showSection(sectionId) {
+            document.getElementById('homeSection').classList.add('hidden');
+            document.getElementById('loginSection').classList.add('hidden');
+            document.getElementById('activitiesSection').classList.add('hidden');
+            document.getElementById('newsSection').classList.add('hidden');
+            document.getElementById('adminSection').classList.add('hidden');
+            
+            document.getElementById(sectionId).classList.remove('hidden');
+            
+            if (sectionId === 'activitiesSection') {
+                const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+                if (currentUser && currentUser.role === 'elderly') {
+                    loadElderActivities(currentUser.id);
+                }
+            } else if (sectionId === 'adminSection') {
+                showAdminTab('activities');
+            } else if (sectionId === 'newsSection') {
+                loadNews();
+            } else if (sectionId === 'homeSection') {
+                loadHomeContent();
+            }
+        }
+        
+        function showAdminTab(tab) {
+            document.getElementById('adminActivitiesContent').classList.add('hidden');
+            document.getElementById('adminEldersContent').classList.add('hidden');
+            document.getElementById('adminReportsContent').classList.add('hidden');
+            document.getElementById('adminNewsContent').classList.add('hidden');
+            
+            document.getElementById('adminActivitiesTab').classList.remove('bg-blue-600', 'text-white');
+            document.getElementById('adminEldersTab').classList.remove('bg-blue-600', 'text-white');
+            document.getElementById('adminReportsTab').classList.remove('bg-blue-600', 'text-white');
+            document.getElementById('adminNewsTab').classList.remove('bg-blue-600', 'text-white');
+            
+            document.getElementById('adminActivitiesTab').classList.add('bg-gray-300');
+            document.getElementById('adminEldersTab').classList.add('bg-gray-300');
+            document.getElementById('adminReportsTab').classList.add('bg-gray-300');
+            document.getElementById('adminNewsTab').classList.add('bg-gray-300');
+            
+            document.getElementById(`${tab}Tab`).classList.remove('bg-gray-300');
+            document.getElementById(`${tab}Tab`).classList.add('bg-blue-600', 'text-white');
+            document.getElementById(`admin${tab.charAt(0).toUpperCase() + tab.slice(1)}Content`).classList.remove('hidden');
+            
+            switch (tab) {
+                case 'activities':
+                    loadAllActivities();
+                    break;
+                case 'elders':
+                    loadEldersList();
+                    break;
+                case 'news':
+                    loadAdminNews();
+                    break;
+            }
+        }
+        
+        function showAddActivityModal() {
+            document.getElementById('activityForm').reset();
+            const saveButton = document.querySelector('#activityForm button[type="button"]:last-child');
+            saveButton.textContent = 'Salvar';
+            saveButton.onclick = saveActivity;
+            
+            document.getElementById('addActivityModal').classList.remove('hidden');
+        }
+        
+        function showAddElderModal() {
+            document.getElementById('elderForm').reset();
+            const saveButton = document.querySelector('#elderForm button[type="button"]:last-child');
+            saveButton.textContent = 'Salvar';
+            saveButton.onclick = saveElder;
+            
+            document.getElementById('addElderModal').classList.remove('hidden');
+        }
+        
+        function showAddNewsModal() {
+            document.getElementById('newsForm').reset();
+            document.getElementById('newsDate').value = new Date().toISOString().split('T')[0];
+            
+            document.getElementById('addNewsModal').classList.remove('hidden');
+        }
+        
+        function hideModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+        }
+        
+        function toggleMobileMenu() {
+            document.getElementById('mobileMenu').classList.toggle('hidden');
+        }
+        
+        function togglePasswordVisibility(fieldId) {
+            const field = document.getElementById(fieldId);
+            const icon = field.nextElementSibling.querySelector('i');
+            
+            if (field.type === 'password') {
+                field.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                field.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+        
+        function showLoginForm() {
+            document.getElementById('loginForm').classList.remove('hidden');
+            document.getElementById('forgotPasswordForm').classList.add('hidden');
+            document.getElementById('registerForm').classList.add('hidden');
+        }
+        
+        function showForgotPassword() {
+            document.getElementById('loginForm').classList.add('hidden');
+            document.getElementById('forgotPasswordForm').classList.remove('hidden');
+            document.getElementById('registerForm').classList.add('hidden');
+        }
+        
+        function showRegisterForm() {
+            document.getElementById('loginForm').classList.add('hidden');
+            document.getElementById('forgotPasswordForm').classList.add('hidden');
+            document.getElementById('registerForm').classList.remove('hidden');
+        }
+        
+        function recoverPassword() {
+            const cpf = document.getElementById('recoveryCpf').value;
+            
+            if (!validateCPF(cpf)) {
+                showNotification('CPF inválido', 'error');
+                return;
+            }
+            
+            showNotification('Um e-mail com instruções para recuperar sua senha foi enviado para o endereço cadastrado.');
+            showLoginForm();
+        }
+        
+        function registerUser() {
+            const form = document.getElementById('registerForm');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+            
+            const password = document.getElementById('regPassword').value;
+            const confirmPassword = document.getElementById('regConfirmPassword').value;
+            
+            if (password !== confirmPassword) {
+                showNotification('As senhas não coincidem', 'error');
+                return;
+            }
+            
+            const cpf = document.getElementById('regCpf').value;
+            if (!validateCPF(cpf)) {
+                showNotification('CPF inválido', 'error');
+                return;
+            }
+            
+            const zipCode = document.getElementById('regZipCode').value;
+            if (!validateZipCode(zipCode)) {
+                showNotification('CEP inválido', 'error');
+                return;
+            }
+            
+            const elders = getElders();
+            const newId = elders.length > 0 ? Math.max(...elders.map(e => e.id)) + 1 : 1;
+            
+            const newElder = {
+                id: newId,
+                name: document.getElementById('regName').value,
+                cpf: cpf,
+                birthDate: document.getElementById('regBirthDate').value,
+                gender: "not_say",
+                phone: document.getElementById('regPhone').value,
+                email: document.getElementById('regEmail').value,
+                zipCode: zipCode,
+                address: document.getElementById('regAddress').value,
+                addressNumber: document.getElementById('regAddressNumber').value,
+                complement: "",
+                neighborhood: "",
+                city: "",
+                state: "",
+                password: password,
+                status: "active",
+                activities: []
+            };
+            
+            elders.push(newElder);
+            saveElders(elders);
+            showNotification('Cadastro realizado com sucesso! Por favor, faça login.');
+            showLoginForm();
+        }
+        
+        function generateCaptcha() {
+            const chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+            let captcha = "";
+            for (let i = 0; i < 6; i++) {
+                captcha += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            document.getElementById('captchaText').textContent = captcha;
+        }
+        
+        function loadHomeContent() {
+            const activities = getActivities().slice(0, 3);
+            const news = getNews().slice(0, 3);
+            
+            loadUpcomingActivities(activities);
+            loadLatestNews(news);
+        }
+        
+        function loadUpcomingActivities(activities) {
+            const container = document.getElementById('upcomingActivities');
+            container.innerHTML = '';
+            
+            if (activities.length === 0) {
+                container.innerHTML = '<div class="text-center p-4 bg-gray-100 rounded"><p>Nenhuma atividade programada no momento.</p></div>';
+                return;
+            }
+            
+            activities.forEach(activity => {
+                const availableSlots = activity.slots - activity.participants.length;
+                
+                const activityElement = document.createElement('div');
+                activityElement.className = 'activity-card bg-white rounded-lg shadow-md overflow-hidden';
+                activityElement.innerHTML = `
+                    <div class="p-4">
+                        <div class="flex justify-between items-start mb-2">
+                            <h4 class="text-xl font-bold">${activity.name}</h4>
+                            <span class="text-xs px-2 py-1 rounded-full ${getCategoryClass(activity.category)}">${getCategoryName(activity.category)}</span>
+                        </div>
+                        <p class="text-gray-600 mb-3">${activity.description}</p>
+                        <div class="flex justify-between items-center">
+                            <div>
+                                ${activity.days.map(day => `<span class="text-sm bg-blue-100 text-blue-800 px-2 py-1 rounded mr-1">${getDayName(day)}</span>`).join('')}
+                                <p class="text-sm text-gray-500 mt-2"><i class="fas fa-clock mr-1"></i> ${activity.startTime} - ${activity.endTime}</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-sm font-medium ${availableSlots === 0 ? 'text-red-600' : 'text-green-600'}">
+                                    <i class="fas fa-users"></i> ${availableSlots}/${activity.slots} vagas
+                                </p>
+                                <a href="#activities" class="inline-block mt-2 btn-primary px-4 py-1 rounded-md text-sm">Ver detalhes</a>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                container.appendChild(activityElement);
+            });
+        }
+        
+        function loadLatestNews(newsItems) {
+            const container = document.getElementById('latestNews');
+            container.innerHTML = '';
+            
+            if (newsItems.length === 0) {
+                container.innerHTML = '<div class="text-center p-4 bg-gray-100 rounded"><p>Nenhuma notícia recente no momento.</p></div>';
+                return;
+            }
+            
+            newsItems.forEach(news => {
+                const newsElement = document.createElement('div');
+                newsElement.className = 'bg-white rounded-lg shadow-md overflow-hidden';
+                newsElement.innerHTML = `
+                    <div class="p-4">
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="text-xl font-bold text-blue-800">${news.title}</h3>
+                            <span class="text-sm text-gray-500">${formatDate(news.date)}</span>
+                        </div>
+                        <p class="text-gray-700 mb-4">${truncateText(news.content, 100)}</p>
+                        <div class="flex justify-end">
+                            <a href="#news" class="text-blue-600 hover:text-blue-800 font-medium">Ler mais...</a>
+                        </div>
+                    </div>
+                `;
+                
+                container.appendChild(newsElement);
+            });
+        }
+        
+        function loadElderActivities(elderId) {
+            const allActivities = getActivities();
+            const elderActivities = allActivities.filter(a => a.participants.includes(elderId));
+            const currentDate = new Date();
+            
+            const container = document.getElementById('myActivitiesList');
+            container.innerHTML = '';
+            
+            if (elderActivities.length === 0) {
+                container.innerHTML = '<div class="text-center p-8 bg-gray-100 rounded-lg"><p>Você ainda não está inscrito em nenhuma atividade.</p><p class="mt-2">Navegue pelas atividades disponíveis abaixo e faça sua inscrição!</p></div>';
+                loadAllActivities();
+                return;
+            }
+            
+            elderActivities.forEach(activity => {
+                const isUpcoming = new Date(activity.startDate) > currentDate || 
+                                  (new Date(activity.startDate) <= currentDate && new Date(activity.endDate) >= currentDate);
+                
+                const activityElement = document.createElement('div');
+                activityElement.className = 'activity-card bg-white rounded-lg shadow-md overflow-hidden';
+                activityElement.innerHTML = `
+                    <div class="p-6">
+                        <div class="flex justify-between items-start mb-2">
+                            <h4 class="text-xl font-bold">${activity.name}</h4>
+                            <span class="text-xs px-2 py-1 rounded-full ${isUpcoming ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}">
+                                ${isUpcoming ? 'Em andamento' : 'Encerrada'}
+                            </span>
+                        </div>
+                        <p class="text-gray-600 mb-3">${activity.description}</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <h5 class="font-medium text-sm mb-1"><i class="fas fa-calendar-alt mr-1"></i> Dias:</h5>
+                                ${activity.days.map(day => `<span class="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded mr-1 mb-1">${getDayName(day)}</span>`).join('')}
+                            </div>
+                            <div>
+                                <h5 class="font-medium text-sm mb-1"><i class="fas fa-clock mr-1"></i> Horário:</h5>
+                                <p>${activity.startTime} - ${activity.endTime}</p>
+                            </div>
+                            <div>
+                                <h5 class="font-medium text-sm mb-1"><i class="fas fa-map-marker-alt mr-1"></i> Local:</h5>
+                                <p>${activity.location}</p>
+                            </div>
+                            <div>
+                                <h5 class="font-medium text-sm mb-1"><i class="fas fa-chalkboard-teacher mr-1"></i> Instrutor:</h5>
+                                <p>${activity.instructor || 'A definir'}</p>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center pt-2 border-t border-gray-200">
+                            <p class="text-sm">Período: ${formatDate(activity.startDate)} - ${formatDate(activity.endDate)}</p>
+                            <button onclick="unsubscribeFromActivity(${activity.id}, ${elderId})" class="px-3 py-1 bg-red-500 text-white rounded-md text-sm">
+                                <i class="fas fa-times mr-1"></i> Cancelar
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                container.appendChild(activityElement);
+            });
+            
+            loadAllActivities();
+        }
+        
+        function loadAllActivities(filter = 'all') {
+            const container = document.getElementById('allActivitiesList');
+            container.innerHTML = '';
+            
+            const activities = getActivities();
+            let filteredActivities = activities;
+            
+            if (filter !== 'all') {
+                filteredActivities = activities.filter(a => a.category === filter);
+            }
+            
+            if (filteredActivities.length === 0) {
+                container.innerHTML = '<div class="text-center p-8 bg-gray-100 rounded-lg md:col-span-2 lg:col-span-3"><p>Nenhuma atividade encontrada nesta categoria.</p></div>';
+                return;
+            }
+            
+            filteredActivities.forEach(activity => {
+                const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+                const isElderly = currentUser && currentUser.role === 'elderly';
+                const availableSlots = activity.slots - activity.participants.length;
+                const isEnrolled = isElderly && activity.participants.includes(currentUser.id);
+                const currentDate = new Date();
+                const isUpcoming = new Date(activity.startDate) > currentDate || 
+                                  (new Date(activity.startDate) <= currentDate && new Date(activity.endDate) >= currentDate);
+                
+                const activityElement = document.createElement('div');
+                activityElement.className = 'activity-card bg-white rounded-lg shadow-md overflow-hidden';
+                activityElement.innerHTML = `
+                    <div class="p-6">
+                        <div class="flex justify-between items-start mb-2">
+                            <h4 class="text-xl font-bold">${activity.name}</h4>
+                            <span class="text-xs px-2 py-1 rounded-full ${getCategoryClass(activity.category)}">${getCategoryName(activity.category)}</span>
+                        </div>
+                        <p class="text-gray-600 mb-4">${truncateText(activity.description, 120)}</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <h5 class="font-medium text-sm mb-1"><i class="fas fa-calendar-alt mr-1"></i> Dias:</h5>
+                                ${activity.days.map(day => `<span class="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded mr-1 mb-1">${getDayName(day)}</span>`).join('')}
+                            </div>
+                            <div>
+                                <h5 class="font-medium text-sm mb-1"><i class="fas fa-clock mr-1"></i> Horário:</h5>
+                                <p>${activity.startTime} - ${activity.endTime}</p>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center pt-2 border-t border-gray-200">
+                            <div>
+                                <p class="text-sm font-medium ${availableSlots === 0 ? 'text-red-600' : 'text-green-600'}">
+                                    <i class="fas fa-users"></i> ${availableSlots}/${activity.slots} vagas
+                                </p>
+                                <p class="text-sm">${isUpcoming ? 'Início: ' + formatDate(activity.startDate) : 'Encerrada em ' + formatDate(activity.endDate)}</p>
+                            </div>
+                            ${isElderly ? `
+                                ${isEnrolled ? `
+                                    <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded text-sm">
+                                        <i class="fas fa-check"></i> Inscrito
+                                    </span>
+                                ` : `
+                                    <button onclick="subscribeToActivity(${activity.id}, ${currentUser.id})" class="px-3 py-1 ${availableSlots > 0 ? 'btn-primary' : 'bg-gray-300 cursor-not-allowed'} rounded-md text-sm" ${availableSlots === 0 ? 'disabled' : ''}>
+                                        <i class="fas fa-plus mr-1"></i> Inscrever-se
+                                    </button>
+                                `}
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+                
+                container.appendChild(activityElement);
+            });
+        }
+        
+        function loadNews() {
+            const container = document.getElementById('newsList');
+            container.innerHTML = '';
+            
+            const newsItems = getNews();
+            
+            if (newsItems.length === 0) {
+                container.innerHTML = '<div class="text-center p-8 bg-gray-100 rounded-lg"><p>Nenhuma notícia disponível no momento.</p></div>';
+                return;
+            }
+            
+            newsItems.forEach(news => {
+                const newsElement = document.createElement('div');
+                newsElement.className = 'bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300';
+                newsElement.innerHTML = `
+                    ${news.image ? `<img src="${news.image}" alt="${news.title}" class="w-full h-48 object-cover">` : ''}
+                    <div class="p-6">
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="text-xl font-bold text-blue-800">${news.title}</h3>
+                            <span class="text-sm text-gray-500">${formatDate(news.date)}</span>
+                        </div>
+                        <p class="text-gray-700 mb-4">${news.content}</p>
+                    </div>
+                `;
+                
+                container.appendChild(newsElement);
+            });
+        }
+        
+        function loadAdminActivities() {
+            const container = document.getElementById('adminActivitiesList');
+            container.innerHTML = '';
+            
+            const activities = getActivities();
+            
+            if (activities.length === 0) {
+                container.innerHTML = '<div class="text-center p-4 bg-gray-100 rounded"><p>Nenhuma atividade cadastrada.</p></div>';
+                return;
+            }
+            
+            activities.forEach(activity => {
+                const activityElement = document.createElement('div');
+                activityElement.className = 'bg-white rounded-lg shadow-md p-4';
+                activityElement.innerHTML = `
+                    <div class="flex justify-between items-start mb-2">
+                        <h4 class="text-xl font-bold">${activity.name}</h4>
+                        <span class="bg-${activity.status === 'active' ? 'green' : 'gray'}-100 text-${activity.status === 'active' ? 'green' : 'gray'}-800 px-2 py-1 rounded-full text-sm">${activity.status === 'active' ? 'Ativa' : 'Inativa'}</span>
+                    </div>
+                    <p class="text-gray-600 mb-2"><i class="fas fa-info-circle mr-1"></i> ${truncateText(activity.description, 100)}</p>
+                    <div class="flex flex-wrap justify-between items-center">
+                        <div class="space-y-1">
+                            <p class="text-sm"><i class="fas fa-calendar-alt mr-1"></i> <span class="font-medium">${activity.days.map(day => getDayName(day)).join(', ')}</span>, ${activity.startTime} - ${activity.endTime}</p>
+                            <p class="text-sm"><i class="fas fa-users mr-1"></i> Vagas: ${activity.participants.length}/${activity.slots}</p>
+                            <p class="text-sm"><i class="fas fa-map-marker-alt mr-1"></i> ${activity.location}</p>
+                        </div>
+                        <div class="flex space-x-2 mt-2 md:mt-0">
+                            <button onclick="editActivity(${activity.id})" class="px-3 py-1 bg-yellow-500 text-white rounded-md text-sm">
+                                <i class="fas fa-edit"></i> Editar
+                            </button>
+                            <button onclick="deleteActivity(${activity.id})" class="px-3 py-1 bg-red-500 text-white rounded-md text-sm">
+                                <i class="fas fa-trash"></i> Remover
+                            </button>
+                            <button onclick="viewParticipants(${activity.id})" class="px-3 py-1 bg-blue-500 text-white rounded-md text-sm">
+                                <i class="fas fa-users"></i> Participantes
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                container.appendChild(activityElement);
+            });
+        }
+        
+        function loadEldersList() {
+            const container = document.getElementById('eldersList');
+            container.innerHTML = '';
+            
+            const elders = getElders();
+            
+            if (elders.length === 0) {
+                container.innerHTML = '<div class="text-center p-4 bg-gray-100 rounded"><p>Nenhum idoso cadastrado.</p></div>';
+                return;
+            }
+            
+            elders.forEach(elder => {
+                const elderElement = document.createElement('div');
+                elderElement.className = 'bg-white rounded-lg shadow-md p-4';
+                elderElement.innerHTML = `
+                    <div class="flex justify-between items-start mb-2">
+                        <h4 class="text-xl font-bold">${elder.name}</h4>
+                        <span class="text-sm bg-${elder.status === 'active' ? 'blue' : 'gray'}-100 text-${elder.status === 'active' ? 'blue' : 'gray'}-800 px-2 py-1 rounded-full">${elder.status === 'active' ? 'Ativo' : 'Inativo'}</span>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-2">
+                        <div>
+                            <p class="text-sm"><span class="font-medium">CPF:</span> ${formatCPF(elder.cpf)}</p>
+                            <p class="text-sm"><span class="font-medium">Idade:</span> ${calculateAge(elder.birthDate)} anos</p>
+                        </div>
+                        <div>
+                            <p class="text-sm"><span class="font-medium">Telefone:</span> ${elder.phone}</p>
+                            <p class="text-sm"><span class="font-medium">CEP:</span> ${formatZipCode(elder.zipCode)}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm"><span class="font-medium">Atividades:</span> ${elder.activities ? elder.activities.length : 0}</p>
+                            <p class="text-sm"><span class="font-medium">Endereço:</span> ${elder.address}, ${elder.addressNumber}</p>
+                        </div>
+                    </div>
+                    <div class="flex justify-end space-x-2">
+                        <button onclick="editElder(${elder.id})" class="px-3 py-1 bg-yellow-500 text-white rounded-md text-sm">
+                            <i class="fas fa-edit"></i> Editar
+                        </button>
+                        <button onclick="viewElderActivities(${elder.id})" class="px-3 py-1 bg-blue-500 text-white rounded-md text-sm">
+                            <i class="fas fa-list"></i> Atividades
+                        </button>
+                        <button onclick="deleteElder(${elder.id})" class="px-3 py-1 bg-red-500 text-white rounded-md text-sm">
+                            <i class="fas fa-trash"></i> Remover
+                        </button>
+                    </div>
+                `;
+                
+                container.appendChild(elderElement);
+            });
+        }
+        
+        function loadAdminNews() {
+            const container = document.getElementById('newsAdminList');
+            container.innerHTML = '';
+            
+            const newsItems = getNews();
+            
+            if (newsItems.length === 0) {
+                container.innerHTML = '<div class="text-center p-4 bg-gray-100 rounded"><p>Nenhuma notícia cadastrada.</p></div>';
+                return;
+            }
+            
+            newsItems.forEach(news => {
+                const newsElement = document.createElement('div');
+                newsElement.className = 'bg-white rounded-lg shadow-md overflow-hidden';
+                newsElement.innerHTML = `
+                    <div class="p-6">
+                        <div class="flex justify-between items-start mb-2">
+                            <h4 class="text-xl font-bold">${news.title}</h4>
+                            <span class="text-sm text-gray-500">${formatDate(news.date)}</span>
+                        </div>
+                        <p class="text-gray-700 mb-4">${truncateText(news.content, 150)}</p>
+                        <div class="flex justify-end space-x-2">
+                            <button class="px-3 py-1 bg-yellow-500 text-white rounded-md text-sm">
+                                <i class="fas fa-edit"></i> Editar
+                            </button>
+                            <button class="px-3 py-1 bg-blue-500 text-white rounded-md text-sm">
+                                <i class="fas fa-eye"></i> Visualizar
+                            </button>
+                            <button class="px-3 py-1 bg-red-500 text-white rounded-md text-sm">
+                                <i class="fas fa-trash"></i> Remover
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                container.appendChild(newsElement);
+            });
+        }
+        
+        function getDayName(dayCode) {
+            const days = {
+                'seg': 'Segunda',
+                'ter': 'Terça',
+                'qua': 'Quarta',
+                'qui': 'Quinta',
+                'sex': 'Sexta',
+                'sab': 'Sábado'
+            };
+            return days[dayCode] || dayCode;
+        }
+        
+        function getCategoryName(category) {
+            const categories = {
+                'arts': 'Artes',
+                'sports': 'Esportes',
+                'education': 'Educação',
+                'health': 'Saúde',
+                'other': 'Outras'
+            };
+            return categories[category] || category;
+        }
+        
+        function getCategoryClass(category) {
+            const classes = {
+                'arts': 'bg-purple-100 text-purple-800',
+                'sports': 'bg-green-100 text-green-800',
+                'education': 'bg-blue-100 text-blue-800',
+                'health': 'bg-red-100 text-red-800',
+                'other': 'bg-gray-100 text-gray-800'
+            };
+            return classes[category] || 'bg-gray-100 text-gray-800';
+        }
+        
+        function formatDate(dateString) {
+            const options = { day: '2-digit', month: '2-digit', year: 'numeric' };
+            return new Date(dateString).toLocaleDateString('pt-BR', options);
+        }
+        
+        function truncateText(text, maxLength) {
+            return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+        }
+        
+        function formatCPF(cpf) {
+            return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+        }
+        
+        function formatZipCode(zipCode) {
+            return zipCode.replace(/(\d{5})(\d{3})/, '$1-$2');
+        }
+        
+        function calculateAge(birthDate) {
+            const today = new Date();
+            const birth = new Date(birthDate);
+            let age = today.getFullYear() - birth.getFullYear();
+            const monthDiff = today.getMonth() - birth.getMonth();
+            
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+                age--;
+            }
+            
+            return age;
+        }
+        
+        function toggleAccessibilityPanel() {
+            const panel = document.getElementById('accessibilityPanel');
+            panel.classList.toggle('open');
+        }
+        
+        function changeFontSize(change) {
+            const html = document.documentElement;
+            let currentSize = parseFloat(window.getComputedStyle(html, null).getPropertyValue('font-size'));
+            
+            if (change === 0) {
+                html.style.fontSize = '16px';
+                localStorage.setItem('fontSize', '16px');
+            } else {
+                const newSize = currentSize + (change * 2);
+                if (newSize >= 12 && newSize <= 24) {
+                    html.style.fontSize = newSize + 'px';
+                    localStorage.setItem('fontSize', newSize + 'px');
+                }
+            }
+        }
+        
+        function toggleContrast() {
+            document.body.classList.toggle('text-high-contrast');
+            localStorage.setItem('highContrast', document.body.classList.contains('text-high-contrast'));
+        }
+        
+        function setDarkMode(enable) {
+            if (enable) {
+                document.documentElement.classList.add('dark');
+                document.body.classList.add('bg-gray-900', 'text-gray-100');
+                localStorage.setItem('darkMode', 'true');
+            } else {
+                document.documentElement.classList.remove('dark');
+                document.body.classList.remove('bg-gray-900', 'text-gray-100');
+                localStorage.setItem('darkMode', 'false');
+            }
+        }
+        
+        function readPage() {
+            document.getElementById('readPageBtn').classList.add('hidden');
+            document.getElementById('stopReadingBtn').classList.remove('hidden');
+            
+            const main = document.querySelector('main');
+            const paragraphs = main.querySelectorAll('h1, h2, h3, h4, h5, h6, p');
+            
+            let currentIndex = 0;
+            const readingElements = Array.from(paragraphs).filter(p => p.textContent.trim().length > 0);
+            
+            function readNext() {
+                if (currentIndex >= readingElements.length) {
+                    stopReading();
+                    return;
+                }
+                
+                if (currentIndex > 0) {
+                    readingElements[currentIndex - 1].classList.remove('reading');
+                }
+                
+                const currentElement = readingElements[currentIndex];
+                currentElement.classList.add('reading');
+                
+                currentElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                
+                const utterance = new SpeechSynthesisUtterance(currentElement.textContent);
+                utterance.lang = 'pt-BR';
+                utterance.rate = 0.9;
+                
+                utterance.onend = function() {
+                    currentIndex++;
+                    readNext();
+                };
+                
+                speechSynthesis.speak(utterance);
+            }
+            
+            readNext();
+        }
+        
+        function stopReading() {
+            speechSynthesis.cancel();
+            
+            document.getElementById('readPageBtn').classList.remove('hidden');
+            document.getElementById('stopReadingBtn').classList.add('hidden');
+            
+            document.querySelectorAll('.reading').forEach(el => {
+                el.classList.remove('reading');
+            });
+        }
+        
+        function filterActivities(filter) {
+            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            if (!currentUser || currentUser.role !== 'elderly') return;
+            
+            const allActivities = getActivities();
+            const elderActivities = allActivities.filter(a => a.participants.includes(currentUser.id));
+            const currentDate = new Date();
+            
+            let filteredActivities = elderActivities;
+            
+            if (filter === 'upcoming') {
+                filteredActivities = elderActivities.filter(a => 
+                    new Date(a.startDate) > currentDate || 
+                    (new Date(a.startDate) <= currentDate && new Date(a.endDate) >= currentDate)
+                );
+            } else if (filter === 'past') {
+                filteredActivities = elderActivities.filter(a => new Date(a.endDate) < currentDate);
+            }
+            
+            loadFilteredElderActivities(filteredActivities);
+        }
+        
+        function filterAllActivities(category) {
+            loadAllActivities(category);
+        }
+        
+        function loadFilteredElderActivities(activities) {
+            const container = document.getElementById('myActivitiesList');
+            container.innerHTML = '';
+            
+            if (activities.length === 0) {
+                container.innerHTML = '<div class="text-center p-8 bg-gray-100 rounded-lg"><p>Nenhuma atividade encontrada com este filtro.</p></div>';
+                return;
+            }
+            
+            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            const currentDate = new Date();
+            
+            activities.forEach(activity => {
+                const isUpcoming = new Date(activity.startDate) > currentDate || 
+                                  (new Date(activity.startDate) <= currentDate && new Date(activity.endDate) >= currentDate);
+                
+                const activityElement = document.createElement('div');
+                activityElement.className = 'activity-card bg-white rounded-lg shadow-md overflow-hidden';
+                activityElement.innerHTML = `
+                    <div class="p-6">
+                        <div class="flex justify-between items-start mb-2">
+                            <h4 class="text-xl font-bold">${activity.name}</h4>
+                            <span class="text-xs px-2 py-1 rounded-full ${isUpcoming ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}">
+                                ${isUpcoming ? 'Em andamento' : 'Encerrada'}
+                            </span>
+                        </div>
+                        <p class="text-gray-600 mb-3">${activity.description}</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <h5 class="font-medium text-sm mb-1"><i class="fas fa-calendar-alt mr-1"></i> Dias:</h5>
+                                ${activity.days.map(day => `<span class="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded mr-1 mb-1">${getDayName(day)}</span>`).join('')}
+                            </div>
+                            <div>
+                                <h5 class="font-medium text-sm mb-1"><i class="fas fa-clock mr-1"></i> Horário:</h5>
+                                <p>${activity.startTime} - ${activity.endTime}</p>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center pt-2 border-t border-gray-200">
+                            <p class="text-sm">Período: ${formatDate(activity.startDate)} - ${formatDate(activity.endDate)}</p>
+                            ${isUpcoming ? `
+                                <button onclick="unsubscribeFromActivity(${activity.id}, ${currentUser.id})" class="px-3 py-1 bg-red-500 text-white rounded-md text-sm">
+                                    <i class="fas fa-times mr-1"></i> Cancelar
+                                </button>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+                
+                container.appendChild(activityElement);
+            });
+        }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeStorage();
+            checkSession();
+            
+            const savedFontSize = localStorage.getItem('fontSize');
+            if (savedFontSize) {
+                document.documentElement.style.fontSize = savedFontSize;
+            }
+            
+            if (localStorage.getItem('highContrast') === 'true') {
+                document.body.classList.add('text-high-contrast');
+            }
+            
+            if (localStorage.getItem('darkMode') === 'true') {
+                setDarkMode(true);
+            }
+            
+            document.getElementById('mobileMenuBtn').addEventListener('click', toggleMobileMenu);
+            
+            document.getElementById('loginForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
+                const userType = document.getElementById('userType').value;
+                
+                
+                const success = login(username, password, userType);
+                if (!success) {
+                    localStorage.setItem('loginAttempts', (loginAttempts + 1).toString());
+                } else {
+                    localStorage.removeItem('loginAttempts');
+                }
+            });
+            
+            document.getElementById('newsDate').value = new Date().toISOString().split('T')[0];
+            
+            window.addEventListener('hashchange', handleHashChange);
+            handleHashChange();
+        });
+        
+        function handleHashChange() {
+            const hash = window.location.hash.substring(1);
+            
+            switch (hash) {
+                case 'login':
+                    showSection('loginSection');
+                    break;
+                case 'activities':
+                    showSection('activitiesSection');
+                    break;
+                case 'news':
+                    showSection('newsSection');
+                    break;
+                case 'admin':
+                    showSection('adminSection');
+                    break;
+                case '':
+                    showSection('homeSection');
+                    break;
+                default:
+                    if (!['login', 'activities', 'news', 'admin'].includes(hash)) {
+                        showSection('homeSection');
+                    }
+            }
+        }
+    </script>
+</body>
+</html>
